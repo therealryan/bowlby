@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.flowty.bowlby</groupId>
+  <artifactId>parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <description>Parent pom</description>
+  <url>https://github.com/therealryan/bowlby</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://opensource.org/licenses/Apache-2.0</url>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>app</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://github.com/therealryan/bowlby.git</connection>
+    <developerConnection>scm:git:https://github.com/therealryan/bowlby.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/therealryan/bowlby</url>
+  </scm>
+
+  <properties>
+    <maven.compiler.target>20</maven.compiler.target>
+    <maven.compiler.source>20</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <!-- JSON support -->
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.15.3</version>
+      </dependency>
+
+      <dependency>
+        <!-- testing -->
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.10.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <!-- Mocks for testing -->
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>4.11.0</version>
+      </dependency>
+
+      <dependency>
+        <!-- web browser automation -->
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>4.13.0</version>
+      </dependency>
+
+      <dependency>
+        <!-- Logging support -->
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>2.0.9</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <plugin>
+          <!-- junit5 support -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+
+        <plugin>
+          <!-- `mvn formatter:format` to apply the format -->
+          <groupId>net.revelc.code.formatter</groupId>
+          <artifactId>formatter-maven-plugin</artifactId>
+          <version>2.16.0</version>
+          <configuration>
+            <!-- This plugin only executes in the child modules, so we need to 
+                 step one dir up and then back down to the format file. If we end up with
+                 deeper-nested projects then they'll need to step commensurately further up -->
+            <configFile>${project.basedir}/../src/main/eclipse/format.xml</configFile>
+            <lineEnding>LF</lineEnding>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <!-- Fails builds on non-compliant formatting -->
+                <goal>validate</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <!-- `mvn sortpom:sort` to format the pom files -->
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <lineSeparator>\n</lineSeparator>
+            <nrOfIndentSpace>2</nrOfIndentSpace>
+            <createBackupFile>false</createBackupFile>
+            <expandEmptyElements>false</expandEmptyElements>
+            <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+          </configuration>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
