@@ -1,2 +1,3 @@
 # bowlby
-github actions artifact browsing
+
+github actions artifact proxy
