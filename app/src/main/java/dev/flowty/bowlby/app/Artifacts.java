@@ -24,84 +24,89 @@ import org.slf4j.LoggerFactory;
  */
 public class Artifacts {
 
-	private static final Logger LOG = LoggerFactory.getLogger( Artifacts.class );
+  private static final Logger LOG = LoggerFactory.getLogger( Artifacts.class );
 
-	private static final Path DOWNLOAD_ROOT = Paths.get(
-			System.getProperty( "java.io.tmpdir" ),
-			"bowlby" );
+  private static final Path DOWNLOAD_ROOT = Paths.get(
+      System.getProperty( "java.io.tmpdir" ),
+      "bowlby" );
 
-	private final String authToken;
+  private final String githubApiHost;
+  private final String authToken;
 
-	/**
-	 * @param authToken The authorisation token to use for API requests
-	 */
-	public Artifacts( String authToken ) {
-		this.authToken = authToken;
-	}
+  /**
+   * @param githubApiHost The host name to send API requests to
+   * @param authToken     The authorisation token to use for API requests
+   */
+  public Artifacts( String githubApiHost, String authToken ) {
+    this.githubApiHost = githubApiHost;
+    this.authToken = authToken;
+  }
 
-	private static final HttpClient HTTP = HttpClient.newBuilder().build();
+  private static final HttpClient HTTP = HttpClient.newBuilder().build();
 
-	/**
-	 * Gets an artifact file path, downloading it if necessary
-	 *
-	 * @param owner      The repository owner
-	 * @param repository The repository name
-	 * @param artifactId The ID of the artifact
-	 * @return The path to the artifact zip file, or null if it could not be
-	 *         retrieved
-	 */
-	public Path get( String owner, String repository, String artifactId ) {
+  /**
+   * Gets an artifact file path, downloading it if necessary
+   *
+   * @param owner      The repository owner
+   * @param repository The repository name
+   * @param artifactId The ID of the artifact
+   * @return The path to the artifact zip file, or <code>null</code> if it could
+   *         not be retrieved
+   */
+  public Path get( String owner, String repository, String artifactId ) {
 
-		Path destination = DOWNLOAD_ROOT
-				.resolve( owner )
-				.resolve( repository )
-				.resolve( artifactId + ".zip" );
+    Path destination = DOWNLOAD_ROOT
+        .resolve( owner )
+        .resolve( repository )
+        .resolve( artifactId + ".zip" );
 
-		if( Files.exists( destination ) ) {
-			return destination;
-		}
+    if( Files.exists( destination ) ) {
+      return destination;
+    }
 
-		LOG.info( "Downloading artifact {}/{}/{}", owner, repository, artifactId );
+    LOG.info( "Downloading artifact {}/{}/{}", owner, repository, artifactId );
 
-		// downloading artifacts is a two-step process.
-		// First we hit the API to get the download URL
-		try {
-			HttpResponse<String> redirect = HTTP.send(
-					HttpRequest.newBuilder()
-							.GET()
-							.uri( new URI( String.format(
-									"https://api.github.com/repos/%s/%s/actions/artifacts/%s/zip",
-									owner, repository, artifactId ) ) )
-							.header( "Accept", "application/vnd.github+json" )
-							.header( "Authorization", "Bearer " + authToken )
-							.header( "X-GitHub-Api-Version", "2022-11-28" )
-							.build(),
-					BodyHandlers.ofString() );
+    // downloading artifacts is a two-step process:
 
-			Optional<String> dlUri = redirect.headers().firstValue( "location" );
-			if( redirect.statusCode() != 302 && dlUri.isEmpty() ) {
-				LOG.warn( "Failed to get download URL {}/{}", redirect.statusCode(), dlUri );
-			}
-			else {
-				LOG.debug( "Downloading from {}", dlUri.get() );
-				Files.createDirectories( destination.getParent() );
-				// then we hit that download URL
-				HttpResponse<Path> dl = HTTP.send(
-						HttpRequest.newBuilder()
-								.GET()
-								.uri( new URI( dlUri.get() ) )
-								.build(),
-						BodyHandlers.ofFile( destination, CREATE, TRUNCATE_EXISTING, WRITE ) );
+    // First we hit the API to get the download URL
+    try {
+      HttpResponse<String> redirect = HTTP.send(
+          HttpRequest.newBuilder()
+              .GET()
+              .uri( new URI( String.format(
+                  "/repos/%s/%s/actions/artifacts/%s/zip",
+                  githubApiHost, owner, repository, artifactId ) ) )
+              .header( "Accept", "application/vnd.github+json" )
+              .header( "Authorization", "Bearer " + authToken )
+              .header( "X-GitHub-Api-Version", "2022-11-28" )
+              .build(),
+          BodyHandlers.ofString() );
 
-				LOG.info( "Downloaded to {}" + dl.body() );
+      Optional<String> dlUri = redirect.headers().firstValue( "location" );
+      if( redirect.statusCode() != 302 && dlUri.isEmpty() ) {
+        LOG.warn( "Failed to get download URL {}/{}",
+            redirect.statusCode(), redirect.body() );
+      }
+      else {
+        LOG.debug( "Downloading from {}", dlUri.get() );
+        Files.createDirectories( destination.getParent() );
+        // then we hit that download URL
+        HttpResponse<Path> dl = HTTP.send(
+            HttpRequest.newBuilder()
+                .GET()
+                .uri( new URI( dlUri.get() ) )
+                .build(),
+            BodyHandlers.ofFile( destination, CREATE, TRUNCATE_EXISTING, WRITE ) );
 
-				return dl.body();
-			}
-		}
-		catch( IOException | InterruptedException | URISyntaxException e ) {
-			LOG.error( "Failed to download artifact {}/{}/{}", owner, repository, artifactId, e );
-		}
+        LOG.info( "Downloaded to {}" + dl.body() );
 
-		return null;
-	}
+        return dl.body();
+      }
+    }
+    catch( IOException | InterruptedException | URISyntaxException e ) {
+      LOG.error( "Failed to download artifact {}/{}/{}", owner, repository, artifactId, e );
+    }
+
+    return null;
+  }
 }
