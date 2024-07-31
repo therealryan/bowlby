@@ -70,7 +70,14 @@
         <!-- Logging support -->
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
-        <version>2.0.9</version>
+        <version>2.0.13</version>
+      </dependency>
+
+      <dependency>
+        <!-- command-line argument parsing -->
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>4.7.6</version>
       </dependency>
 
     </dependencies>

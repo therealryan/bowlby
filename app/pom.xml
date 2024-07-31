@@ -13,10 +13,15 @@
   <dependencies>
 
     <dependency>
+      <!-- Logging support -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+
+    <dependency>
       <!-- command-line argument parsing -->
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.7.6</version>
     </dependency>
 
     <dependency>

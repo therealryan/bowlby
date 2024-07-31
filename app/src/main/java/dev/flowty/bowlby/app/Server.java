@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.sun.net.httpserver.HttpServer;
 
+/**
+ * Provides the HTTP server by which artifacts are requested and served
+ */
 public class Server {
 	private static final Map<String, String> SUFFIX_CONTENT_TYPES = new TreeMap<>();
 	static {
