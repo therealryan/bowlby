@@ -3,6 +3,7 @@ package dev.flowty.bowlby.app;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +15,11 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,24 +52,23 @@ public class Artifacts {
   /**
    * Gets an artifact file path, downloading it if necessary
    *
-   * @param owner      The repository owner
-   * @param repository The repository name
+   * @param repository The repository
    * @param artifactId The ID of the artifact
    * @return The path to the artifact zip file, or <code>null</code> if it could
    *         not be retrieved
    */
-  public Path get( String owner, String repository, String artifactId ) {
+  public Path get( GitHubRepository repository, String artifactId ) {
 
     Path destination = DOWNLOAD_ROOT
-        .resolve( owner )
-        .resolve( repository )
+        .resolve( repository.owner() )
+        .resolve( repository.repo() )
         .resolve( artifactId + ".zip" );
 
     if( Files.exists( destination ) ) {
       return destination;
     }
 
-    LOG.info( "Downloading artifact {}/{}/{}", owner, repository, artifactId );
+    LOG.info( "Downloading artifact {}/{}", repository, artifactId );
 
     // downloading artifacts is a two-step process:
 
@@ -74,8 +78,8 @@ public class Artifacts {
           HttpRequest.newBuilder()
               .GET()
               .uri( new URI( String.format(
-                  "/repos/%s/%s/actions/artifacts/%s/zip",
-                  githubApiHost, owner, repository, artifactId ) ) )
+                  "%s/repos/%s/%s/actions/artifacts/%s/zip",
+                  githubApiHost, repository.owner(), repository.repo(), artifactId ) ) )
               .header( "Accept", "application/vnd.github+json" )
               .header( "Authorization", "Bearer " + authToken )
               .header( "X-GitHub-Api-Version", "2022-11-28" )
@@ -104,9 +108,80 @@ public class Artifacts {
       }
     }
     catch( IOException | InterruptedException | URISyntaxException e ) {
-      LOG.error( "Failed to download artifact {}/{}/{}", owner, repository, artifactId, e );
+      LOG.error( "Failed to download artifact {}/{}", repository, artifactId, e );
     }
 
     return null;
+  }
+
+  /**
+   * Lists the repo owners for which we have cached artifacts
+   *
+   * @return The set of owners
+   */
+  public static Set<String> listOwners() {
+    Path dir = DOWNLOAD_ROOT;
+    if( !Files.exists( dir ) || !Files.isDirectory( dir ) ) {
+      return Collections.emptySet();
+    }
+
+    try( Stream<Path> files = Files.list( dir ) ) {
+      return files.filter( Files::isDirectory )
+          .map( path -> path.getFileName().toString() )
+          .collect( toCollection( TreeSet::new ) );
+    }
+    catch( IOException e ) {
+      LOG.warn( "Failed to list owners", e );
+      return Collections.emptySet();
+    }
+  }
+
+  /**
+   * Lists the repos for which we have cached artifacts
+   *
+   * @param owner The owner of the repos
+   * @return The set of ownder repos
+   */
+  public static Set<String> listRepos( String owner ) {
+    Path dir = DOWNLOAD_ROOT
+        .resolve( owner );
+    if( !Files.exists( dir ) || !Files.isDirectory( dir ) ) {
+      return Collections.emptySet();
+    }
+    try( Stream<Path> files = Files.list( dir ) ) {
+      return files.filter( Files::isDirectory )
+          .map( path -> path.getFileName().toString() )
+          .collect( toCollection( TreeSet::new ) );
+    }
+    catch( IOException e ) {
+      LOG.warn( "Failed to list repos for {}", owner, e );
+      return Collections.emptySet();
+    }
+  }
+
+  /**
+   * Lists the artifact IDs that we have cached
+   *
+   * @param repo The repo that owns the artifacts
+   * @return The artifact IDs
+   */
+  public static Set<String> listArtifacts( GitHubRepository repo ) {
+    Path dir = DOWNLOAD_ROOT
+        .resolve( repo.owner() )
+        .resolve( repo.repo() );
+    if( !Files.exists( dir ) || !Files.isDirectory( dir ) ) {
+      return Collections.emptySet();
+    }
+    try( Stream<Path> files = Files.list( dir ) ) {
+      return files.filter( Files::isRegularFile )
+          .map( path -> path.getFileName().toString() )
+          .filter( file -> file.endsWith( ".zip" ) )
+          .map( file -> file.substring( 0, file.length() - 4 ) )
+          .collect( toCollection( TreeSet::new ) );
+    }
+    catch( IOException e ) {
+      LOG.warn( "Failed to list zips for {}", repo, e );
+      return Collections.emptySet();
+    }
   }
 }

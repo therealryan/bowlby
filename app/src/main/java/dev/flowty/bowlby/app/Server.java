@@ -1,25 +1,32 @@
 package dev.flowty.bowlby.app;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toCollection;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
  * Provides the HTTP server by which artifacts are requested and served
  */
-public class Server {
+public class Server implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( Server.class );
 
   private static final Map<String, String> SUFFIX_CONTENT_TYPES = new TreeMap<>();
@@ -30,56 +37,155 @@ public class Server {
   }
 
   private final HttpServer server;
-
-  /**
-   * Matches on paths to artiufact files, capturing:
-   * <ol>
-   * <li>Repository owner</li>
-   * <li>Repository name</li>
-   * <li>Artifact ID</li>
-   * <li>Artifact-internal file path</li>
-   * </ol>
-   */
-  static final Pattern ARTIFACT_PATH = Pattern.compile(
-      "/artifact/([^/]+)/([^/]+)/([^/]+)(.*)" );
+  private final Set<GitHubRepository> repos;
+  private final Artifacts artifacts;
 
   /**
    * Creates a new server
    *
-   * @param port The port that the server should listen on
+   * @param port  The port that the server should listen on
+   * @param repos The set of repos that we're limited to
    */
   @SuppressWarnings("resource")
-  public Server( int port ) {
+  public Server( int port, Set<GitHubRepository> repos, Artifacts artifacts ) {
+    this.repos = repos;
+    this.artifacts = artifacts;
     try {
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
-      server.createContext( "/", exchange -> {
-        try {
-          byte[] body = ("hello world!\n"
-              + exchange.getRequestURI()).getBytes( StandardCharsets.UTF_8 );
-
-          String path = exchange.getRequestURI().toString();
-          Matcher m = ARTIFACT_PATH.matcher( path );
-          if( m.matches() ) {
-            body = String.format( "browsing artifact '%s' '%s' '%s' '%s'",
-                m.group( 1 ), m.group( 2 ), m.group( 3 ), m.group( 4 ) )
-                .getBytes( StandardCharsets.UTF_8 );
-          }
-
-          exchange.sendResponseHeaders( 200, body.length );
-          try( OutputStream os = exchange.getResponseBody() ) {
-            os.write( body );
-          }
-        }
-        catch( Exception e ) {
-          LOG.error( "request handling failure!", e );
-          exchange.sendResponseHeaders( 500, 0 );
-        }
-      } );
+      server.createContext( "/", this ); // calls to handle()
     }
     catch( IOException ioe ) {
       throw new UncheckedIOException( "Failed to create server", ioe );
     }
     server.setExecutor( Executors.newCachedThreadPool() );
+  }
+
+  @Override
+  public void handle( HttpExchange exchange ) throws IOException {
+    LOG.debug( "handling {} {}", exchange.getRequestMethod(), exchange.getRequestURI() );
+
+    if( !"GET".equalsIgnoreCase( exchange.getRequestMethod() ) ) {
+      respond( exchange, 501, "Only GET supported" );
+      return;
+    }
+
+    try {
+      Deque<String> path = Stream.of( exchange.getRequestURI().getPath().split( "/" ) )
+          .filter( e -> !e.isEmpty() )
+          .collect( toCollection( ArrayDeque::new ) );
+      LOG.debug( "path {}", path );
+
+      if( path.isEmpty() ) {
+        handleOwnerRequest( exchange );
+        return;
+      }
+      if( path.size() == 1 ) {
+        handleRepoRequest( exchange, path.poll() );
+        return;
+      }
+
+      GitHubRepository repo = new GitHubRepository( path.poll(), path.poll() );
+
+      if( !repos.isEmpty() && !repos.contains( repo ) ) {
+        // we're limited to particular repos, and that isn't one of them
+        respond( exchange, 403, "Forbidden repository addressed" );
+        return;
+      }
+
+      if( path.isEmpty() ) {
+        handleAspectRequest( exchange, repo );
+        return;
+      }
+
+      String aspect = path.poll();
+
+      if( "artifacts".equals( aspect ) ) {
+        handleArtifactRequest( exchange, repo, path );
+      }
+      else {
+        respond( exchange, 404, "No such aspect '" + aspect + "'" );
+      }
+    }
+    catch( Exception e ) {
+      LOG.error( "request handling failure!", e );
+      respond( exchange, 500, "Unexpected failure" );
+    }
+  }
+
+  private void handleOwnerRequest( HttpExchange exchange ) throws IOException {
+    LOG.debug( "displaying owner list" );
+    String title = "Repository owners";
+    String listPage = new Html()
+        .head( h -> h.title( title ) )
+        .body( b -> b
+            .h1( title )
+            .ul( l -> Artifacts.listOwners().forEach( owner -> l
+                .li( i -> i.a( "/" + owner, owner ) ) ) ) )
+        .toString();
+    respond( exchange, 200, listPage );
+  }
+
+  private void handleRepoRequest( HttpExchange exchange, String owner ) throws IOException {
+    LOG.debug( "displaying owner list" );
+    String title = "Repositories of " + owner;
+    String listPage = new Html()
+        .head( h -> h.title( title ) )
+        .body( b -> b
+            .h1( title )
+            .ul( l -> Artifacts.listRepos( owner ).forEach( repo -> l
+                .li( i -> i.a( "/" + owner + "/" + repo, repo ) ) ) ) )
+        .toString();
+    respond( exchange, 200, listPage );
+  }
+
+  private void handleAspectRequest( HttpExchange exchange, GitHubRepository repo )
+      throws IOException {
+    LOG.debug( "displaying aspect list" );
+    String title = "Repository aspects";
+    String listPage = new Html()
+        .head( h -> h.title( title ) )
+        .body( b -> b
+            .h1( title )
+            .ul( l -> l
+                .li( i -> i.a( repo.href() + "/artifacts", "artifacts" ) ) ) )
+        .toString();
+    respond( exchange, 200, listPage );
+  }
+
+  private void handleArtifactRequest( HttpExchange exchange, GitHubRepository repo,
+      Deque<String> path ) throws IOException {
+    if( path.isEmpty() ) {
+      LOG.debug( "displaying artifact list" );
+      // list the zips we have
+      String title = "Cached artifacts for " + repo.owner() + "/" + repo.repo();
+      String listPage = new Html()
+          .head( h -> h.title( title ) )
+          .body( b -> b
+              .h1( title )
+              .ul( l -> Artifacts.listArtifacts( repo ).stream().forEach( art -> l
+                  .li( i -> i.a( repo.href() + "/artifacts/" + art, art ) ) ) ) )
+          .toString();
+      respond( exchange, 200, listPage );
+    }
+    else if( path.size() == 1 ) {
+      // assume it's an artifact id - look for indices in the zip
+      Path zip = artifacts.get( repo, path.poll() );
+      respond( exchange, 503, "pending index search of " + zip
+          + "\n" + ZipAccess.list( zip ) );
+    }
+    else {
+      // it's a path into the zip
+      respond( exchange, 503, "pending file" );
+    }
+
+  }
+
+  private static void respond( HttpExchange exchange, int status, String body ) throws IOException {
+    byte[] bytes = body.getBytes( UTF_8 );
+    exchange.sendResponseHeaders( status, bytes.length );
+    try( OutputStream os = exchange.getResponseBody() ) {
+      os.write( bytes );
+    }
   }
 
   /**

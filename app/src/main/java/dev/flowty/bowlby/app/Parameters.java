@@ -1,6 +1,12 @@
 package dev.flowty.bowlby.app;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -38,8 +44,27 @@ public class Parameters {
       Overrides environment variable 'BOWLBY_GH_AUTH_TOKEN'""")
   private String authToken = System.getenv( "BOWLBY_GH_AUTH_TOKEN" );
 
+  @Option(names = { "-r", "--repos" },
+      description = """
+          A comma-seperated list of 'owner/repo' pairs, identifying the set of repositories for which bowlby will serve artifacts from.
+          Defaults to empty, which means all repo will be served
+          Overrides environment variable 'BOWLBY_GH_REPOS'""")
+  private String repositories = System.getenv( "BOWLBY_GH_REPOS" );
+
+  private static final Pattern REPO_RGX = Pattern.compile( "(\\w+)/(\\w+)" );
+  private final Set<GitHubRepository> repos;
+
   public Parameters( String... args ) {
     new CommandLine( this ).parseArgs( args );
+
+    repos = Stream.of( repositories )
+        .filter( Objects::nonNull )
+        .flatMap( v -> Stream.of( v.split( "," ) ) )
+        .map( String::trim )
+        .map( REPO_RGX::matcher )
+        .filter( Matcher::matches )
+        .map( m -> new GitHubRepository( m.group( 1 ), m.group( 2 ) ) )
+        .collect( Collectors.toSet() );
   }
 
   /**
@@ -73,5 +98,12 @@ public class Parameters {
    */
   public String authToken() {
     return authToken;
+  }
+
+  /**
+   * @return The set of repositories that we should limit ourselves to
+   */
+  public Set<GitHubRepository> repos() {
+    return repos;
   }
 }

@@ -32,7 +32,7 @@ public class Main {
   public Main( Parameters parameters ) {
     this.parameters = parameters;
     artifacts = new Artifacts( parameters.githubApiHost(), parameters.authToken() );
-    server = new Server( parameters.port() );
+    server = new Server( parameters.port(), parameters.repos(), artifacts );
   }
 
   public void start() {
