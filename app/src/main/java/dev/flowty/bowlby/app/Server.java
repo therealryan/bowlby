@@ -4,9 +4,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -43,8 +46,9 @@ public class Server implements HttpHandler {
   /**
    * Creates a new server
    *
-   * @param port  The port that the server should listen on
-   * @param repos The set of repos that we're limited to
+   * @param port      The port that the server should listen on
+   * @param repos     The set of repos that we're limited to
+   * @param artifacts Access to artifact zips
    */
   @SuppressWarnings("resource")
   public Server( int port, Set<GitHubRepository> repos, Artifacts artifacts ) {
@@ -80,6 +84,10 @@ public class Server implements HttpHandler {
         return;
       }
       if( path.size() == 1 ) {
+        if( "favicon.ico".equals( path.getFirst() ) ) {
+          handleFaviconRequest( exchange );
+          return;
+        }
         handleRepoRequest( exchange, path.poll() );
         return;
       }
@@ -109,6 +117,23 @@ public class Server implements HttpHandler {
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );
       respond( exchange, 500, "Unexpected failure" );
+    }
+  }
+
+  private void handleFaviconRequest( HttpExchange exchange ) throws IOException {
+    URL url = Server.class.getResource( "/favicon.ico" );
+    try( InputStream source = url.openStream();
+        OutputStream sink = exchange.getResponseBody() ) {
+      exchange.getResponseHeaders()
+          .add( "cache-control", "max-age=31536000, immutable" );
+      exchange.getResponseHeaders()
+          .add( "content-type", "image/vnd.microsoft.icon" );
+      exchange.sendResponseHeaders( 200, url.openConnection().getContentLength() );
+      byte[] buff = new byte[1024 * 64];
+      int read;
+      while( (read = source.read( buff )) != -1 ) {
+        sink.write( buff, 0, read );
+      }
     }
   }
 
@@ -175,7 +200,33 @@ public class Server implements HttpHandler {
     }
     else {
       // it's a path into the zip
-      respond( exchange, 503, "pending file" );
+      Path zip = artifacts.get( repo, path.poll() );
+      boolean served = ZipAccess.content( zip, path, file -> {
+        try {
+          try( InputStream source = Files.newInputStream( file );
+              OutputStream sink = exchange.getResponseBody() ) {
+            String fileName = file.getFileName().toString();
+            SUFFIX_CONTENT_TYPES.entrySet().stream()
+                .filter( e -> fileName.endsWith( e.getKey() ) )
+                .forEach( e -> exchange.getResponseHeaders()
+                    .add( "content-type", e.getValue() ) );
+            exchange.getResponseHeaders()
+                .add( "cache-control", "max-age=31536000, immutable" );
+            exchange.sendResponseHeaders( 200, Files.size( file ) );
+            byte[] buff = new byte[1024 * 64];
+            int read;
+            while( (read = source.read( buff )) != -1 ) {
+              sink.write( buff, 0, read );
+            }
+          }
+        }
+        catch( IOException ioe ) {
+          throw new UncheckedIOException( ioe );
+        }
+      } );
+      if( !served ) {
+        respond( exchange, 404, "" );
+      }
     }
 
   }

@@ -102,7 +102,7 @@ public class Artifacts {
                 .build(),
             BodyHandlers.ofFile( destination, CREATE, TRUNCATE_EXISTING, WRITE ) );
 
-        LOG.info( "Downloaded to {}" + dl.body() );
+        LOG.info( "Downloaded to {}", dl.body() );
 
         return dl.body();
       }
