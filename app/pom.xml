@@ -13,6 +13,12 @@
   <dependencies>
 
     <dependency>
+      <!-- JSON support -->
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+      
+    <dependency>
       <!-- Logging support -->
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>

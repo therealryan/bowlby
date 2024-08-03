@@ -2,6 +2,10 @@ package dev.flowty.bowlby.app;
 
 import org.slf4j.Logger;
 
+import dev.flowty.bowlby.app.cfg.Parameters;
+import dev.flowty.bowlby.app.github.GithubApiClient;
+import dev.flowty.bowlby.app.srv.Server;
+
 /**
  * Application entrypoint
  */
@@ -9,7 +13,7 @@ public class Main {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger( Main.class );
 
   /**
-   * Application entrypoint
+   * Application entry-point
    *
    * @param args command-line arguments
    */
@@ -25,16 +29,20 @@ public class Main {
     }
   }
 
-  private final Parameters parameters;
   private final Server server;
-  private final Artifacts artifacts;
 
+  /**
+   * @param parameters Configuration object
+   */
   public Main( Parameters parameters ) {
-    this.parameters = parameters;
-    artifacts = new Artifacts( parameters.githubApiHost(), parameters.authToken() );
-    server = new Server( parameters.port(), parameters.repos(), artifacts );
+    GithubApiClient ghClient = new GithubApiClient(
+        parameters.githubApiHost(), parameters.authToken() );
+    server = new Server( parameters.port(), parameters.repos(), ghClient );
   }
 
+  /**
+   * Starts the application
+   */
   public void start() {
     server.start();
   }
