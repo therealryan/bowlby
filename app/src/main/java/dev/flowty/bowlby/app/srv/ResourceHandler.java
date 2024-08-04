@@ -12,7 +12,7 @@ import com.sun.net.httpserver.HttpHandler;
 /**
  * Serves a classpath resource
  */
-public class ResourceHandler implements HttpHandler {
+class ResourceHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( ResourceHandler.class );
 
   private final String name;

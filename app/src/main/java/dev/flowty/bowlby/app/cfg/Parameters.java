@@ -34,15 +34,15 @@ public class Parameters {
       .map( Integer::parseInt )
       .orElse( 56567 );
 
-  @Option(names = { "-g", "--ghHost" }, description = """
+  @Option(names = { "-h", "--host" }, description = """
       The hostname to target with github API requests.
       Defaults to 'https://api.github.com'
       Overrides environment variable 'BOWLBY_GH_HOST'""")
   private String githubApiHost = Optional.ofNullable( System.getenv( "BOWLBY_GH_HOST" ) )
       .orElse( "https://api.github.com" );
 
-  @Option(names = { "-a", "--authToken" }, description = """
-      The github auth token to present on API requests.
+  @Option(names = { "-t", "--token" }, description = """
+      The github authorisation token to present on API requests.
       Overrides environment variable 'BOWLBY_GH_AUTH_TOKEN'""")
   private String authToken = System.getenv( "BOWLBY_GH_AUTH_TOKEN" );
 
@@ -53,13 +53,22 @@ public class Parameters {
           Overrides environment variable 'BOWLBY_GH_REPOS'""")
   private String repositories = System.getenv( "BOWLBY_GH_REPOS" );
 
-  @Option(names = { "-c", "--cache" },
+  @Option(names = { "-l", "--latestValidity" },
       description = """
           An ISO-8601 duration string, controlling how long the latest artifact results are cached for.
-          Defaults to 'PT10M', which means it could take up to 10 minutes for the link to the latest artifact to point to the results of a new run.
+          Defaults to 'PT10M', which means it could take up to 10 minutes for the link to the latest artifact to reflect the results of a new run.
           Overrides environment variable 'BOWLBY_LATEST_VALIDITY'""")
-  private String cachValidity = Optional.ofNullable( System.getenv( "BOWLBY_LATEST_VALIDITY" ) )
+  private String latestValidity = Optional.ofNullable( System.getenv( "BOWLBY_LATEST_VALIDITY" ) )
       .orElse( "PT10M" );
+
+  @Option(names = { "-a", "--artifactValidity" },
+      description = """
+          An ISO-8601 duration string, controlling how long an artifact zip is preserved for.
+          Defaults to 'P3D', which means a downloaded artifact zip will be deleted 3 days after its most recent access.
+          Overrides environment variable 'BOWLBY_ARTIFACT_VALIDITY'""")
+  private String artifactValidity = Optional
+      .ofNullable( System.getenv( "BOWLBY_ARTIFACT_VALIDITY" ) )
+      .orElse( "P3D" );
 
   private static final Pattern REPO_RGX = Pattern.compile( "(\\w+)/(\\w+)" );
   private final Set<Repository> repos;
@@ -125,6 +134,13 @@ public class Parameters {
    *         cached
    */
   public Duration latestArtifactCacheDuration() {
-    return Duration.parse( cachValidity );
+    return Duration.parse( latestValidity );
+  }
+
+  /**
+   * @return The time after which an unused artifact zip is deleted
+   */
+  public Duration artifactCacheDuration() {
+    return Duration.parse( artifactValidity );
   }
 }

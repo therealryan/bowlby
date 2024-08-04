@@ -31,7 +31,7 @@ import dev.flowty.bowlby.app.html.Html;
  * Handles requests to <code>/artifacts/owner/repo/artifactId</code>, serves
  * github artifact contents
  */
-public class ArtifactHandler implements HttpHandler {
+class ArtifactHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( ArtifactHandler.class );
 
   /**

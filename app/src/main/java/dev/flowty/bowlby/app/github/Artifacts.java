@@ -1,8 +1,13 @@
 package dev.flowty.bowlby.app.github;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +25,16 @@ public class Artifacts {
       System.getProperty( "java.io.tmpdir" ), "bowlby", "github" );
 
   private final GithubApiClient client;
+  private final Duration artifactValidity;
 
   /**
-   * @param client how to interact with github
+   * @param client           how to interact with github
+   * @param artifactValidity how long an artifact can go without being accessed
+   *                         before we delete it
    */
-  public Artifacts( GithubApiClient client ) {
+  public Artifacts( GithubApiClient client, Duration artifactValidity ) {
     this.client = client;
+    this.artifactValidity = artifactValidity;
   }
 
   /**
@@ -36,6 +45,8 @@ public class Artifacts {
    *         not be retrieved
    */
   public Path get( Artifact artifact ) {
+    purgeStaleFiles();
+
     Path destination = DOWNLOAD_ROOT
         .resolve( artifact.repo().owner() )
         .resolve( artifact.repo().repo() )
@@ -46,5 +57,39 @@ public class Artifacts {
     }
 
     return client.getArtifact( artifact, destination );
+  }
+
+  /**
+   * Deletes all files in the download dir that haven't been accessed recently
+   */
+  private void purgeStaleFiles() {
+    Instant threshold = Instant.now().minus( artifactValidity );
+
+    try( Stream<Path> files = Files.walk( DOWNLOAD_ROOT ) ) {
+      files
+          .filter( path -> {
+            try {
+              return Files.readAttributes( path, BasicFileAttributes.class )
+                  .lastAccessTime()
+                  .toInstant()
+                  .isBefore( threshold );
+            }
+            catch( IOException e ) {
+              LOG.warn( "Failed to determine last access time of " + path, e );
+              return false;
+            }
+          } )
+          .forEach( stale -> {
+            try {
+              Files.delete( stale );
+            }
+            catch( IOException e ) {
+              LOG.error( "Failed to purge stale artifact " + stale, e );
+            }
+          } );
+    }
+    catch( Exception e ) {
+      LOG.error( "Failed to purge stale artifacts", e );
+    }
   }
 }

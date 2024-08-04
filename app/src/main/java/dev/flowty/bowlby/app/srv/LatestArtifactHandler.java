@@ -37,12 +37,9 @@ import dev.flowty.bowlby.app.html.Html;
  * <dd>redirects to <code>/artifacts/owner/repo/artifactId</code></dd>
  * </dl>
  */
-public class LatestArtifactHandler implements HttpHandler {
+class LatestArtifactHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( LatestArtifactHandler.class );
 
-  /**
-   * The set of repos that we allow ourselves to serve from
-   */
   private final Set<Repository> repos;
   private final GithubApiClient client;
   private final Duration cacheValidity;
@@ -119,6 +116,8 @@ public class LatestArtifactHandler implements HttpHandler {
       ServeUtil.redirect( exchange, String.format(
           "/artifacts/%s/%s/%s/%s",
           workflow.repo().owner(), workflow.repo().repo(), selected.artifact().id(),
+          // append the remaining path to the redirect so you can generate a stable link
+          // to a file within the latest artifact
           path.stream().collect( joining( "/" ) ) ) );
     }
     catch( Exception e ) {
@@ -162,7 +161,7 @@ public class LatestArtifactHandler implements HttpHandler {
     return cached;
   }
 
-  private void showArtifactLinks( HttpExchange exchange, int status, Workflow workflow,
+  private static void showArtifactLinks( HttpExchange exchange, int status, Workflow workflow,
       LatestArtifact latest ) throws IOException {
     BiConsumer<Html, NamedArtifact> artifactItem = ( html, artifact ) -> {
       html.li( i -> i.a(

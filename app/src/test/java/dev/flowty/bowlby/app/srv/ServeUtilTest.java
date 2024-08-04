@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Exercises {@link ServeUtil} behaviours
  */
+@SuppressWarnings("static-method")
 class ServeUtilTest {
 
   /**

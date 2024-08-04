@@ -22,17 +22,20 @@ public class Server {
   /**
    * Creates a new server
    *
-   * @param port     The port that the server should listen on
-   * @param repos    The set of repos that we're limited to
-   * @param ghClient Client for the github api
+   * @param port                        The port that the server should listen on
+   * @param repos                       The set of repos that we're limited to
+   * @param ghClient                    Client for the github api
+   * @param artifacts                   Manages artifact downloads
+   * @param latestArtifactCacheDuration The minimum time between checks for the
+   *                                    latest run of a workflow
    */
   @SuppressWarnings("resource")
-  public Server( int port, Set<Repository> repos, GithubApiClient ghClient,
+  public Server( int port, Set<Repository> repos, GithubApiClient ghClient, Artifacts artifacts,
       Duration latestArtifactCacheDuration ) {
     try {
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
       server.createContext( "/favicon.ico", new ResourceHandler( "/favicon.ico" ) );
-      server.createContext( "/artifacts", new ArtifactHandler( repos, new Artifacts( ghClient ) ) );
+      server.createContext( "/artifacts", new ArtifactHandler( repos, artifacts ) );
       server.createContext( "/latest",
           new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) );
       server.createContext( "/", new LinkHandler() );

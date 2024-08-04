@@ -3,6 +3,7 @@ package dev.flowty.bowlby.app;
 import org.slf4j.Logger;
 
 import dev.flowty.bowlby.app.cfg.Parameters;
+import dev.flowty.bowlby.app.github.Artifacts;
 import dev.flowty.bowlby.app.github.GithubApiClient;
 import dev.flowty.bowlby.app.srv.Server;
 
@@ -38,10 +39,12 @@ public class Main {
     GithubApiClient ghClient = new GithubApiClient(
         parameters.githubApiHost(),
         parameters.authToken() );
+    Artifacts artifacts = new Artifacts( ghClient, parameters.artifactCacheDuration() );
     server = new Server(
         parameters.port(),
         parameters.repos(),
         ghClient,
+        artifacts,
         parameters.latestArtifactCacheDuration() );
   }
 

@@ -16,7 +16,7 @@ import com.sun.net.httpserver.HttpHandler;
 /**
  * Deals with submitted links
  */
-public class LinkHandler implements HttpHandler {
+class LinkHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( LinkHandler.class );
 
   private static final Pattern GITHUB_ARTIFACT_LINK = Pattern.compile(

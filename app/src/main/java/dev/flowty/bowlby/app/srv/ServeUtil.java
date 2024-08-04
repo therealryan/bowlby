@@ -25,7 +25,7 @@ import dev.flowty.bowlby.app.html.Html;
 /**
  * Generic handler utils
  */
-public class ServeUtil {
+class ServeUtil {
   private static final Logger LOG = LoggerFactory.getLogger( ServeUtil.class );
 
   private ServeUtil() {
