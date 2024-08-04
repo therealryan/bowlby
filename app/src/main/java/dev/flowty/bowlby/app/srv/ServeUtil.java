@@ -154,19 +154,23 @@ public class ServeUtil {
    */
   public static void showLinkForm( HttpExchange exchange, int status, String message )
       throws IOException {
+    String destination = "/".equals( exchange.getRequestURI().getPath() )
+        ? "https://github.com/therealryan/bowlby"
+        : "/";
     Html page = new Html()
         .head( h -> h
             .title( "bowlby" ) )
         .body( b -> b
             .h1( h -> h
-                .a( "https://github.com/therealryan/bowlby", "bowlby" ) )
+                .a( destination, "bowlby" ) )
             .form( f -> f
                 .atr( "action", "/" )
                 .input( i -> i
                     .atr( "type", "text" )
                     .atr( "id", "link_input" )
                     .atr( "name", "link" )
-                    .atr( "placeholder", "github artifact link" ) )
+                    .atr( "placeholder", "github artifact or workflow link" )
+                    .atr( "size", "50" ) )
                 .input( i -> i
                     .atr( "type", "submit" )
                     .atr( "id", "submit_input" ) ) )

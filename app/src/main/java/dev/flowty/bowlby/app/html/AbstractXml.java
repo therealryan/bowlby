@@ -20,9 +20,18 @@ import java.util.stream.Stream;
  */
 abstract class AbstractXml<S extends AbstractXml<S>> {
 
-  private final String element;
-  private final Map<String, String> attributes = new TreeMap<>();
-  private final List<String> contents = new ArrayList<>();
+  /**
+   * The element name
+   */
+  protected final String element;
+  /**
+   * The set of attributes on the element name
+   */
+  protected final Map<String, String> attributes = new TreeMap<>();
+  /**
+   * The contents of the element
+   */
+  protected final List<String> contents = new ArrayList<>();
 
   /**
    * @param element the root element name
@@ -234,8 +243,15 @@ abstract class AbstractXml<S extends AbstractXml<S>> {
    * @return <code>this</code>
    */
   public S txt( String content ) {
-    contents.add( escape( content ) );
-    return self();
+    return cnt( escape( content ) );
+  }
+
+  private static String escape( String str ) {
+    return str.chars().mapToObj(
+        c -> c > 127 || "\"'<>&".indexOf( c ) != -1
+            ? "&#" + c + ";"
+            : String.valueOf( (char) c ) )
+        .collect( Collectors.joining() );
   }
 
   /**
@@ -249,23 +265,30 @@ abstract class AbstractXml<S extends AbstractXml<S>> {
     return self();
   }
 
-  public static String escape( String str ) {
-    return str.chars().mapToObj(
-        c -> c > 127 || "\"'<>&".indexOf( c ) != -1
-            ? "&#" + c + ";"
-            : String.valueOf( (char) c ) )
-        .collect( Collectors.joining() );
-  }
-
   @Override
   public String toString() {
     if( contents.isEmpty() ) {
-      return String.format( "<%s%s/>",
-          element,
-          attributes.entrySet().stream()
-              .map( e -> " " + e.getKey() + "=\"" + e.getValue() + "\"" )
-              .collect( joining() ) );
+      return selfClosed();
     }
+    return startAndEnd();
+  }
+
+  /**
+   * @return A self-closed tag, e.g.: <code>&lt;name/&gt;</code>
+   */
+  protected String selfClosed() {
+    return String.format( "<%s%s/>",
+        element,
+        attributes.entrySet().stream()
+            .map( e -> " " + e.getKey() + "=\"" + e.getValue() + "\"" )
+            .collect( joining() ) );
+  }
+
+  /**
+   * @return A start/end tag pair, e.g.:
+   *         <code>&lt;name&gt;contents&lt;/name&gt;</code>
+   */
+  protected String startAndEnd() {
     return String.format( "<%s%s>%s</%s>",
         element,
         attributes.entrySet().stream()

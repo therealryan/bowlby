@@ -3,6 +3,7 @@ package dev.flowty.bowlby.app.github;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,15 +19,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.flowty.bowlby.app.github.Entity.Artifact;
-import dev.flowty.bowlby.app.github.Entity.Branch;
 import dev.flowty.bowlby.app.github.Entity.NamedArtifact;
 import dev.flowty.bowlby.app.github.Entity.Run;
 import dev.flowty.bowlby.app.github.Entity.Workflow;
+import dev.flowty.bowlby.app.github.Message.ListWorkflowRunArtifactsResponse;
 import dev.flowty.bowlby.app.github.Message.ListWorkflowRunResponse;
 
 /**
@@ -123,30 +125,34 @@ public class GithubApiClient {
   }
 
   /**
-   * Gets the ID of the latest run of a workflow
+   * Gets the latest runs of a workflow
    *
    * @param workflow The workflow
-   * @param branch   The branch we're interested in
    * @return The latest run ID of that workflow on that branch, or
    *         <code>null</code> on failure
    */
-  public Run getLatestRun( Workflow workflow, Branch branch ) {
+  public Run getLatestRun( Workflow workflow ) {
     LOG.info( "Getting latest run of {}", workflow );
     try {
       HttpResponse<ListWorkflowRunResponse> response = send( HttpRequest.newBuilder()
           .GET()
           .uri( new URI( String.format(
-              "%s/repos/%s/%s/actions/workflows/%s/runs?branch=%s",
+              "%s/repos/%s/%s/actions/workflows/%s/runs?branch=main&status=completed&per_page=1",
               apiHost,
-              workflow.repo().owner(), workflow.repo().repo(),
-              workflow.name(), branch.name() ) ) )
+              workflow.repo().owner(), workflow.repo().repo(), workflow.name() ) ) )
           .header( "Accept", "application/vnd.github+json" )
           .header( "Authorization", "Bearer " + authToken )
           .header( "X-GitHub-Api-Version", "2022-11-28" )
           .build(),
           ListWorkflowRunResponse.HANDLER );
 
-      System.out.println( response.body().runs );
+      return Optional.ofNullable( response )
+          .map( HttpResponse::body )
+          .map( b -> b.runs )
+          .filter( l -> !l.isEmpty() )
+          .map( l -> l.get( 0 ) )
+          .map( msg -> new Run( workflow, msg.id ) )
+          .orElse( null );
     }
     catch( IOException | InterruptedException | URISyntaxException e ) {
       LOG.error( "Failed to find latest run of {}", workflow, e );
@@ -158,9 +164,36 @@ public class GithubApiClient {
    * Gets the names and IDs of the artifacts on a workflow run
    *
    * @param run The run ID of that workflow
-   * @return A map from artifact name to artifact ID
+   * @return The set of artifacts from the run, or <code>null</code> on failure
    */
   public Set<NamedArtifact> getArtifacts( Run run ) {
+    LOG.info( "Getting artifacts of {}", run );
+    try {
+      HttpResponse<ListWorkflowRunArtifactsResponse> response = send( HttpRequest.newBuilder()
+          .GET()
+          .uri( new URI( String.format(
+              "%s/repos/%s/%s/actions/runs/%s/artifacts",
+              apiHost,
+              run.flow().repo().owner(), run.flow().repo().repo(), run.id() ) ) )
+          .header( "Accept", "application/vnd.github+json" )
+          .header( "Authorization", "Bearer " + authToken )
+          .header( "X-GitHub-Api-Version", "2022-11-28" )
+          .build(),
+          ListWorkflowRunArtifactsResponse.HANDLER );
+
+      return Optional.ofNullable( response )
+          .map( HttpResponse::body )
+          .map( body -> body.artifacts )
+          .map( list -> list.stream()
+              .map( msg -> new NamedArtifact(
+                  new Artifact( run.flow().repo(), msg.id ),
+                  msg.name ) )
+              .collect( toCollection( () -> new TreeSet<>( NamedArtifact.ORDER ) ) ) )
+          .orElse( new TreeSet<>() );
+    }
+    catch( IOException | InterruptedException | URISyntaxException e ) {
+      LOG.error( "Failed to find artifacts of {}", run, e );
+    }
     return null;
   }
 
@@ -194,7 +227,9 @@ public class GithubApiClient {
 
     LOG.debug( "Sending request {}", request );
     HttpResponse<T> response = http.send( request, handler );
-    LOG.debug( "Got response {}", response );
+    if( LOG.isDebugEnabled() ) {
+      LOG.debug( "Got response {}\n{}", response, Message.toJson( response.body() ) );
+    }
 
     lastCall = Instant.now();
     updateInterval(

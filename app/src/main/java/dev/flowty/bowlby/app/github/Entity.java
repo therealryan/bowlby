@@ -1,5 +1,7 @@
 package dev.flowty.bowlby.app.github;
 
+import java.util.Comparator;
+
 /**
  * Typesafe entities for the Github API
  */
@@ -31,7 +33,6 @@ public class Entity {
    * @param name The name of the workflow
    */
   public record Workflow(Repository repo, String name) {
-
   }
 
   /**
@@ -59,6 +60,13 @@ public class Entity {
    * @param name     The artifact name
    */
   public record NamedArtifact(Artifact artifact, String name) {
+    public static final Comparator<NamedArtifact> ORDER = ( a, b ) -> {
+      int d = a.name().compareTo( b.name() );
+      if( d == 0 ) {
+        d = a.artifact.id().compareTo( b.artifact.id() );
+      }
+      return d;
+    };
   }
 
   /**

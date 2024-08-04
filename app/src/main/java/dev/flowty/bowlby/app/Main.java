@@ -36,8 +36,13 @@ public class Main {
    */
   public Main( Parameters parameters ) {
     GithubApiClient ghClient = new GithubApiClient(
-        parameters.githubApiHost(), parameters.authToken() );
-    server = new Server( parameters.port(), parameters.repos(), ghClient );
+        parameters.githubApiHost(),
+        parameters.authToken() );
+    server = new Server(
+        parameters.port(),
+        parameters.repos(),
+        ghClient,
+        parameters.latestArtifactCacheDuration() );
   }
 
   /**

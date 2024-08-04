@@ -3,6 +3,7 @@ package dev.flowty.bowlby.app.srv;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.Executors;
 
@@ -26,12 +27,14 @@ public class Server {
    * @param ghClient Client for the github api
    */
   @SuppressWarnings("resource")
-  public Server( int port, Set<Repository> repos, GithubApiClient ghClient ) {
+  public Server( int port, Set<Repository> repos, GithubApiClient ghClient,
+      Duration latestArtifactCacheDuration ) {
     try {
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
       server.createContext( "/favicon.ico", new ResourceHandler( "/favicon.ico" ) );
       server.createContext( "/artifacts", new ArtifactHandler( repos, new Artifacts( ghClient ) ) );
-      server.createContext( "/latest", new LatestArtifactHandler( repos, ghClient ) );
+      server.createContext( "/latest",
+          new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) );
       server.createContext( "/", new LinkHandler() );
     }
     catch( IOException ioe ) {

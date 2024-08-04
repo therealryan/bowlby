@@ -1,5 +1,6 @@
 package dev.flowty.bowlby.app.cfg;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -52,9 +53,20 @@ public class Parameters {
           Overrides environment variable 'BOWLBY_GH_REPOS'""")
   private String repositories = System.getenv( "BOWLBY_GH_REPOS" );
 
+  @Option(names = { "-c", "--cache" },
+      description = """
+          An ISO-8601 duration string, controlling how long the latest artifact results are cached for.
+          Defaults to 'PT10M', which means it could take up to 10 minutes for the link to the latest artifact to point to the results of a new run.
+          Overrides environment variable 'BOWLBY_LATEST_VALIDITY'""")
+  private String cachValidity = Optional.ofNullable( System.getenv( "BOWLBY_LATEST_VALIDITY" ) )
+      .orElse( "PT10M" );
+
   private static final Pattern REPO_RGX = Pattern.compile( "(\\w+)/(\\w+)" );
   private final Set<Repository> repos;
 
+  /**
+   * @param args From the commandline
+   */
   public Parameters( String... args ) {
     new CommandLine( this ).parseArgs( args );
 
@@ -106,5 +118,13 @@ public class Parameters {
    */
   public Set<Repository> repos() {
     return repos;
+  }
+
+  /**
+   * @return The maximum time for which the latest artifacts for a workflow are
+   *         cached
+   */
+  public Duration latestArtifactCacheDuration() {
+    return Duration.parse( cachValidity );
   }
 }

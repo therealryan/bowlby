@@ -1,6 +1,7 @@
 package dev.flowty.bowlby.app.html;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -31,7 +32,27 @@ class HtmlTest {
    */
   @Test
   void empty() {
-    assertEquals( "<html/>", new Html().toString() );
+    assertEquals( "<html></html>", new Html().toString() );
+
+    assertEquals( "<html><br/></html>", new Html().br().toString(),
+        "void elements are self-closed" );
+    assertEquals( "<html><ul></ul></html>", new Html().ul().toString(),
+        "non-void elements are start/end tagged" );
+  }
+
+  /**
+   * Content is not allowed in void elements
+   */
+  @Test
+  void voidElements() {
+    Html html = new Html();
+
+    assertThrows( IllegalArgumentException.class, () -> html
+        .elm( "br", b -> b
+            .txt( "foo" ) ) );
+
+    assertThrows( IllegalArgumentException.class, () -> html
+        .elm( "IMG", b -> b.span( "bar" ) ) );
   }
 
   /**
@@ -39,7 +60,7 @@ class HtmlTest {
    */
   @Test
   void attributes() {
-    assertEquals( "<html name=\"value\"/>",
+    assertEquals( "<html name=\"value\"></html>",
         new Html().atr( "name", "value" ).toString() );
   }
 

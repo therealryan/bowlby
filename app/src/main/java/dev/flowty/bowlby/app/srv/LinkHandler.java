@@ -20,7 +20,10 @@ public class LinkHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( LinkHandler.class );
 
   private static final Pattern GITHUB_ARTIFACT_LINK = Pattern.compile(
-      "https://github.com/([^/]+)/([^/]+)/actions/runs/\\d+/artifacts/(\\d+)" );
+      "https://github.com/([^/]+)/([^/]+)/actions/runs/\\d+/artifacts/([^/]+)" );
+
+  private static final Pattern GITHUB_WORKFLOW_LINK = Pattern.compile(
+      "https://github.com/([^/]+)/([^/]+)/actions/workflows/([^?]+)" );
 
   @Override
   public void handle( HttpExchange exchange ) throws IOException {
@@ -40,18 +43,33 @@ public class LinkHandler implements HttpHandler {
           .orElse( null );
 
       if( link != null ) {
-        Matcher m = GITHUB_ARTIFACT_LINK.matcher( link );
-        if( m.find() ) {
-          ServeUtil.redirect( exchange, String.format(
-              "/artifacts/%s/%s/%s",
-              m.group( 1 ), m.group( 2 ), m.group( 3 ) ) );
-          return;
+        {
+          Matcher artifactMatch = GITHUB_ARTIFACT_LINK.matcher( link );
+          if( artifactMatch.find() ) {
+            ServeUtil.redirect( exchange, String.format(
+                "/artifacts/%s/%s/%s",
+                artifactMatch.group( 1 ), artifactMatch.group( 2 ), artifactMatch.group( 3 ) ) );
+            return;
+          }
+        }
+        {
+          Matcher workFlowMatch = GITHUB_WORKFLOW_LINK.matcher( link );
+          if( workFlowMatch.find() ) {
+            ServeUtil.redirect( exchange, String.format(
+                "/latest/%s/%s/%s",
+                workFlowMatch.group( 1 ), workFlowMatch.group( 2 ), workFlowMatch.group( 3 ) ) );
+            return;
+          }
         }
         ServeUtil.showLinkForm( exchange, 200, "Failed to grok " + link );
         return;
       }
 
-      ServeUtil.showLinkForm( exchange, 200, null );
+      ServeUtil.showLinkForm( exchange,
+          "/".equals( exchange.getRequestURI().getPath() )
+              ? 200
+              : 404,
+          null );
     }
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );

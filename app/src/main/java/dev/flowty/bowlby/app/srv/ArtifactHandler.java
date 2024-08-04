@@ -169,11 +169,11 @@ public class ArtifactHandler implements HttpHandler {
             .title( "bowlby" ) )
         .body( b -> b
             .h1( h -> h
-                .a( "/", "bowlby" ) ) )
-        .ul( l -> l
-            // link to the parent dir if we're not already at the root
-            .conditional( c -> c.li( i -> i.a( "../", "../" ) ) ).on( dir.getNameCount() > 0 )
-            .repeat( linkItem ).over( all ) )
+                .a( "/", "bowlby" ) )
+            .ul( l -> l
+                // link to the parent dir if we're not already at the root
+                .conditional( c -> c.li( i -> i.a( "../", "../" ) ) ).on( dir.getNameCount() > 0 )
+                .repeat( linkItem ).over( all ) ) )
         .toString();
   }
 }
