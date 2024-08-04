@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import dev.flowty.bowlby.app.github.Entity.Branch;
 import dev.flowty.bowlby.app.github.Entity.NamedArtifact;
 import dev.flowty.bowlby.app.github.Entity.Repository;
 import dev.flowty.bowlby.app.github.Entity.Run;
@@ -145,7 +146,8 @@ public class LatestArtifactHandler implements HttpHandler {
           workflow, cached.expiry );
     }
     else {
-      Run latest = client.getLatestRun( workflow );
+      Branch defaultBranch = client.getDefaultBranch( workflow.repo() );
+      Run latest = client.getLatestRun( workflow, defaultBranch );
       if( latest == null ) {
         return null;
       }
@@ -182,7 +184,7 @@ public class LatestArtifactHandler implements HttpHandler {
             .on( latest.artifacts().isEmpty() )
             .conditional( c -> c
                 .p( "These stable links will redirect to the latest artifacts for the ",
-                    workflow.name(), " workflow. ",
+                    workflow.name(), " workflow on the default branch. ",
                     "Feel free to append path components to address files within the artifacts" )
                 .ul( u -> u
                     .repeat( artifactItem ).over( latest.artifacts() ) )

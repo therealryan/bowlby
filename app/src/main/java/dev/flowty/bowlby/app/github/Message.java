@@ -155,4 +155,22 @@ class Message {
       this.name = name;
     }
   }
+
+  /**
+   * https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
+   */
+  @SuppressWarnings("javadoc")
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  static class GetRepoResponse {
+    static JsonBodyHandler<GetRepoResponse> HANDLER = new JsonBodyHandler<>(
+        GetRepoResponse.class );
+
+    @JsonProperty("default_branch")
+    public final String defaultBranch;
+
+    public GetRepoResponse(
+        @JsonProperty("default_branch") String defaultBranch ) {
+      this.defaultBranch = defaultBranch;
+    }
+  }
 }

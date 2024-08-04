@@ -17,11 +17,18 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-      
+
     <dependency>
-      <!-- Logging support -->
+      <!-- Logging api -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <!-- Logging implementation -->
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>

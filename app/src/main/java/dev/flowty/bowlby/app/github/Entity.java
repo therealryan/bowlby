@@ -36,6 +36,15 @@ public class Entity {
   }
 
   /**
+   * The identifier for a branch
+   *
+   * @param repo The repo that owns the branch
+   * @param name The branch name
+   */
+  public record Branch(Repository repo, String name) {
+  }
+
+  /**
    * The identifier for a single run of a workflow
    *
    * @param flow The owning workflow
@@ -67,13 +76,5 @@ public class Entity {
       }
       return d;
     };
-  }
-
-  /**
-   * The name of a {@link Repository} branch
-   *
-   * @param name The branch name
-   */
-  public record Branch(String name) {
   }
 }

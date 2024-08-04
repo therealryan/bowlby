@@ -25,9 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.flowty.bowlby.app.github.Entity.Artifact;
+import dev.flowty.bowlby.app.github.Entity.Branch;
 import dev.flowty.bowlby.app.github.Entity.NamedArtifact;
+import dev.flowty.bowlby.app.github.Entity.Repository;
 import dev.flowty.bowlby.app.github.Entity.Run;
 import dev.flowty.bowlby.app.github.Entity.Workflow;
+import dev.flowty.bowlby.app.github.Message.GetRepoResponse;
 import dev.flowty.bowlby.app.github.Message.ListWorkflowRunArtifactsResponse;
 import dev.flowty.bowlby.app.github.Message.ListWorkflowRunResponse;
 
@@ -35,6 +38,8 @@ import dev.flowty.bowlby.app.github.Message.ListWorkflowRunResponse;
  * Supports our interactions with the github API.
  */
 public class GithubApiClient {
+  private static final String API_VERSION = "2022-11-28";
+
   /**
    * The number of seconds of inter-call interval above which we suspect something
    * is going wrong with our API usage. We'll start logging warnings and
@@ -91,7 +96,7 @@ public class GithubApiClient {
                   apiHost, artifact.repo().owner(), artifact.repo().repo(), artifact.id() ) ) )
               .header( "Accept", "application/vnd.github+json" )
               .header( "Authorization", "Bearer " + authToken )
-              .header( "X-GitHub-Api-Version", "2022-11-28" )
+              .header( "X-GitHub-Api-Version", API_VERSION )
               .build(),
           BodyHandlers.ofString() );
 
@@ -128,21 +133,22 @@ public class GithubApiClient {
    * Gets the latest runs of a workflow
    *
    * @param workflow The workflow
+   * @param branch   The branch on which the workflow was run
    * @return The latest run ID of that workflow on that branch, or
    *         <code>null</code> on failure
    */
-  public Run getLatestRun( Workflow workflow ) {
+  public Run getLatestRun( Workflow workflow, Branch branch ) {
     LOG.info( "Getting latest run of {}", workflow );
     try {
       HttpResponse<ListWorkflowRunResponse> response = send( HttpRequest.newBuilder()
           .GET()
           .uri( new URI( String.format(
-              "%s/repos/%s/%s/actions/workflows/%s/runs?branch=main&status=completed&per_page=1",
+              "%s/repos/%s/%s/actions/workflows/%s/runs?branch=%s&status=completed&per_page=1",
               apiHost,
-              workflow.repo().owner(), workflow.repo().repo(), workflow.name() ) ) )
+              workflow.repo().owner(), workflow.repo().repo(), workflow.name(), branch.name() ) ) )
           .header( "Accept", "application/vnd.github+json" )
           .header( "Authorization", "Bearer " + authToken )
-          .header( "X-GitHub-Api-Version", "2022-11-28" )
+          .header( "X-GitHub-Api-Version", API_VERSION )
           .build(),
           ListWorkflowRunResponse.HANDLER );
 
@@ -177,7 +183,7 @@ public class GithubApiClient {
               run.flow().repo().owner(), run.flow().repo().repo(), run.id() ) ) )
           .header( "Accept", "application/vnd.github+json" )
           .header( "Authorization", "Bearer " + authToken )
-          .header( "X-GitHub-Api-Version", "2022-11-28" )
+          .header( "X-GitHub-Api-Version", API_VERSION )
           .build(),
           ListWorkflowRunArtifactsResponse.HANDLER );
 
@@ -198,10 +204,40 @@ public class GithubApiClient {
   }
 
   /**
-   * Sends a API request, while trying to keep within the rate limits. The rate
-   * limiting behaviour is the reason for the synchronization - it <i>might</i>
-   * work in a multithreaded context, but it's difficult to tell. I expect our API
-   * usage to be low enough that the synchronization will never be a problem.
+   * Gets the default branch of a repository
+   *
+   * @param repo The repository
+   * @return The default branch name
+   */
+  public Branch getDefaultBranch( Repository repo ) {
+    LOG.info( "Getting details of {}", repo );
+    try {
+      HttpResponse<GetRepoResponse> response = send( HttpRequest.newBuilder()
+          .GET()
+          .uri( new URI( String.format(
+              "%s/repos/%s/%s",
+              apiHost,
+              repo.owner(), repo.repo() ) ) )
+          .header( "Accept", "application/vnd.github+json" )
+          .header( "Authorization", "Bearer " + authToken )
+          .header( "X-GitHub-Api-Version", API_VERSION )
+          .build(),
+          GetRepoResponse.HANDLER );
+
+      return new Branch( repo, response.body().defaultBranch );
+    }
+    catch( IOException | InterruptedException | URISyntaxException e ) {
+      LOG.error( "Failed to get details of {}", repo, e );
+    }
+    return null;
+  }
+
+  /**
+   * Sends a API request, while trying to keep within the rate limits. The
+   * rate-limiting behaviour is the reason for the synchronization - it
+   * <i>might</i> work in a multithreaded context, but it's difficult to tell. I
+   * expect our API usage to be low enough that the synchronization will never be
+   * a problem.
    *
    * @param <T>     Response body type
    * @param request API request

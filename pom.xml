@@ -67,7 +67,14 @@
       </dependency>
 
       <dependency>
-        <!-- Logging support -->
+        <!-- Logging api -->
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>2.0.13</version>
+      </dependency>
+
+      <dependency>
+        <!-- Logging implementation -->
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
         <version>2.0.13</version>
