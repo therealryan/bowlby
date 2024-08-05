@@ -253,7 +253,7 @@ public class GithubApiClient {
     Instant now = Instant.now();
     while( now.isBefore( next ) ) {
       try {
-        Thread.sleep( Duration.between( now, next ) );
+        Thread.sleep( Duration.between( now, next ).toMillis() );
       }
       catch( InterruptedException e ) {
         LOG.warn( "unexpected interruption", e );
