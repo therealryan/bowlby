@@ -1,4 +1,4 @@
-package dev.flowty.bowlby.app.html;
+package dev.flowty.bowlby.app.xml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,6 +20,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.junit.jupiter.api.Test;
+
+import dev.flowty.bowlby.app.xml.AbstractXml;
+import dev.flowty.bowlby.app.xml.Html;
 
 /**
  * Exercises {@link AbstractXml}

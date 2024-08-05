@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpHandler;
 import dev.flowty.bowlby.app.github.Artifacts;
 import dev.flowty.bowlby.app.github.Entity.Artifact;
 import dev.flowty.bowlby.app.github.Entity.Repository;
-import dev.flowty.bowlby.app.html.Html;
+import dev.flowty.bowlby.app.xml.Html;
 
 /**
  * Handles requests to <code>/artifacts/owner/repo/artifactId</code>, serves

@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import dev.flowty.bowlby.app.html.Html;
+import dev.flowty.bowlby.app.xml.Html;
 
 /**
  * Generic handler utils

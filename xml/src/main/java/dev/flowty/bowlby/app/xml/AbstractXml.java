@@ -1,4 +1,4 @@
-package dev.flowty.bowlby.app.html;
+package dev.flowty.bowlby.app.xml;
 
 import static java.util.stream.Collectors.joining;
 

@@ -25,8 +25,8 @@ import dev.flowty.bowlby.app.github.Entity.NamedArtifact;
 import dev.flowty.bowlby.app.github.Entity.Repository;
 import dev.flowty.bowlby.app.github.Entity.Run;
 import dev.flowty.bowlby.app.github.Entity.Workflow;
+import dev.flowty.bowlby.app.xml.Html;
 import dev.flowty.bowlby.app.github.GithubApiClient;
-import dev.flowty.bowlby.app.html.Html;
 
 /**
  * Handles requests to:

@@ -67,15 +67,16 @@ public class Artifacts {
 
     try( Stream<Path> files = Files.walk( DOWNLOAD_ROOT ) ) {
       files
-          .filter( path -> {
+          .filter( Files::isRegularFile )
+          .filter( file -> {
             try {
-              return Files.readAttributes( path, BasicFileAttributes.class )
+              return Files.readAttributes( file, BasicFileAttributes.class )
                   .lastAccessTime()
                   .toInstant()
                   .isBefore( threshold );
             }
             catch( IOException e ) {
-              LOG.warn( "Failed to determine last access time of " + path, e );
+              LOG.warn( "Failed to determine last access time of " + file, e );
               return false;
             }
           } )
