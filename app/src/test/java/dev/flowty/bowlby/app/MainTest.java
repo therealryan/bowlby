@@ -32,7 +32,6 @@ import com.mastercard.test.flow.msg.txt.Text;
 
 import dev.flowfty.bowlby.model.BowlbySystem;
 import dev.flowty.bowlby.app.cfg.Parameters;
-import dev.flowty.bowlby.test.TestLog;
 
 /**
  * Exercises bowlby in isolation
@@ -60,8 +59,7 @@ class MainTest {
     return new Flocessor( "end-to-end", BowlbySystem.MODEL )
         .system( State.FUL, BOWLBY )
         .masking( BORING, RNG )
-        .logs( TestLog.TAIL )
-        .reporting( Reporting.ALWAYS )
+        .reporting( Reporting.FAILURES )
         .behaviour( asrt -> {
           HttpReq req = (HttpReq) asrt.expected().request().child();
           try {
