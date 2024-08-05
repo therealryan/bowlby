@@ -56,7 +56,7 @@ class MainTest {
    */
   @TestFactory
   Stream<DynamicNode> tests() {
-    return new Flocessor( "end-to-end", BowlbySystem.MODEL )
+    return new Flocessor( "isolation", BowlbySystem.MODEL )
         .system( State.FUL, BOWLBY )
         .masking( BORING, RNG )
         .reporting( Reporting.FAILURES )
