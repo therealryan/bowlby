@@ -21,9 +21,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flowty.bowlby.app.xml.AbstractXml;
-import dev.flowty.bowlby.app.xml.Html;
-
 /**
  * Exercises {@link AbstractXml}
  */

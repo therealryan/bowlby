@@ -43,6 +43,12 @@
     </dependency>
 
     <dependency>
+      <!-- text messages -->
+      <groupId>com.mastercard.test.flow</groupId>
+      <artifactId>message-text</artifactId>
+    </dependency>
+
+    <dependency>
       <!-- browser interactions -->
       <groupId>com.mastercard.test.flow</groupId>
       <artifactId>message-web</artifactId>

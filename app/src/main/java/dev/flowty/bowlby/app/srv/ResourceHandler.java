@@ -16,12 +16,15 @@ class ResourceHandler implements HttpHandler {
   private static final Logger LOG = LoggerFactory.getLogger( ResourceHandler.class );
 
   private final String name;
+  private final String contentType;
 
   /**
-   * @param name The resource name
+   * @param name        The resource name
+   * @param contentType The content type to set in responses
    */
-  public ResourceHandler( String name ) {
+  public ResourceHandler( String name, String contentType ) {
     this.name = name;
+    this.contentType = contentType;
   }
 
   @Override
@@ -37,7 +40,7 @@ class ResourceHandler implements HttpHandler {
       exchange.getResponseHeaders()
           .add( "cache-control", "max-age=31536000, immutable" );
       exchange.getResponseHeaders()
-          .add( "content-type", urlc.getContentType() );
+          .add( "content-type", contentType );
       exchange.sendResponseHeaders( 200, urlc.getContentLength() );
       ServeUtil.transfer( urlc::getInputStream, exchange::getResponseBody );
     }

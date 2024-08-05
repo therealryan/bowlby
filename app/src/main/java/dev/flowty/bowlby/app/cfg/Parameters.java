@@ -34,7 +34,7 @@ public class Parameters {
       .map( Integer::parseInt )
       .orElse( 56567 );
 
-  @Option(names = { "-h", "--host" }, description = """
+  @Option(names = { "-g", "--github" }, description = """
       The hostname to target with github API requests.
       Defaults to 'https://api.github.com'
       Overrides environment variable 'BOWLBY_GH_HOST'""")

@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+
 import com.sun.net.httpserver.HttpServer;
 
 import dev.flowty.bowlby.app.github.Artifacts;
@@ -17,6 +19,7 @@ import dev.flowty.bowlby.app.github.GithubApiClient;
  * Provides the HTTP server by which artifacts are requested and served
  */
 public class Server {
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger( Server.class );
   private final HttpServer server;
 
   /**
@@ -34,7 +37,9 @@ public class Server {
       Duration latestArtifactCacheDuration ) {
     try {
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
-      server.createContext( "/favicon.ico", new ResourceHandler( "/favicon.ico" ) );
+      server.setExecutor( Executors.newCachedThreadPool() );
+      server.createContext( "/favicon.ico", new ResourceHandler(
+          "/favicon.ico", "image/vnd.microsoft.icon" ) );
       server.createContext( "/artifacts", new ArtifactHandler( repos, artifacts ) );
       server.createContext( "/latest",
           new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) );
@@ -43,14 +48,6 @@ public class Server {
     catch( IOException ioe ) {
       throw new UncheckedIOException( "Failed to create server", ioe );
     }
-    server.setExecutor( Executors.newCachedThreadPool() );
-  }
-
-  /**
-   * @return The address of the server
-   */
-  public String address() {
-    return "http:/" + server.getAddress().toString();
   }
 
   /**
@@ -58,12 +55,21 @@ public class Server {
    */
   public void start() {
     server.start();
+    LOG.info( "started at http:/{}", server.getAddress() );
+  }
+
+  /**
+   * @return The address that the server is listening on
+   */
+  public InetSocketAddress address() {
+    return server.getAddress();
   }
 
   /**
    * Stops the server
    */
   public void stop() {
-    server.stop( 1 );
+    server.stop( 0 );
+    LOG.info( "shut down" );
   }
 }

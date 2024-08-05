@@ -1,6 +1,6 @@
 package dev.flowty.bowlby.app;
 
-import org.slf4j.Logger;
+import java.net.InetSocketAddress;
 
 import dev.flowty.bowlby.app.cfg.Parameters;
 import dev.flowty.bowlby.app.github.Artifacts;
@@ -11,7 +11,6 @@ import dev.flowty.bowlby.app.srv.Server;
  * Application entrypoint
  */
 public class Main {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger( Main.class );
 
   /**
    * Application entry-point
@@ -26,7 +25,6 @@ public class Main {
     else {
       Main main = new Main( params );
       main.start();
-      LOG.info( "Server up at {}", main.server.address() );
     }
   }
 
@@ -53,5 +51,19 @@ public class Main {
    */
   public void start() {
     server.start();
+  }
+
+  /**
+   * @return The address that the server is listening on
+   */
+  public InetSocketAddress address() {
+    return server.address();
+  }
+
+  /**
+   * Stops the application
+   */
+  public void stop() {
+    server.stop();
   }
 }

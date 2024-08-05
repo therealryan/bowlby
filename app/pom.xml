@@ -45,8 +45,10 @@
     </dependency>
 
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <!-- behaviour assertion -->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>assert</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 

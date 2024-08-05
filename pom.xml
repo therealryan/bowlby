@@ -18,7 +18,9 @@
 
   <modules>
     <module>app</module>
+    <module>assert</module>
     <module>model</module>
+    <module>test</module>
     <module>xml</module>
   </modules>
 
@@ -65,7 +67,7 @@
         <!-- web browser automation -->
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-java</artifactId>
-        <version>4.13.0</version>
+        <version>4.23.0</version>
       </dependency>
 
       <dependency>

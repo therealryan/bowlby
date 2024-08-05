@@ -46,7 +46,11 @@ public class BowlbySystem {
     /**
      * Things that are just not interesting to model
      */
-    BORING
+    BORING,
+    /**
+     * Things that are random
+     */
+    RNG,
   }
 
   /**
