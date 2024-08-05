@@ -30,10 +30,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml -Dmctf.report.dir=latest
 
-    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
-
     - name: Save flow execution reports
       uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
       with:
