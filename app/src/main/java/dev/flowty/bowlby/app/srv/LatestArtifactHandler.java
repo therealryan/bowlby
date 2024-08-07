@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -25,8 +26,8 @@ import dev.flowty.bowlby.app.github.Entity.NamedArtifact;
 import dev.flowty.bowlby.app.github.Entity.Repository;
 import dev.flowty.bowlby.app.github.Entity.Run;
 import dev.flowty.bowlby.app.github.Entity.Workflow;
-import dev.flowty.bowlby.app.xml.Html;
 import dev.flowty.bowlby.app.github.GithubApiClient;
+import dev.flowty.bowlby.app.xml.Html;
 
 /**
  * Handles requests to:
@@ -97,7 +98,7 @@ class LatestArtifactHandler implements HttpHandler {
 
       if( path.isEmpty() ) {
         // the path has no indication of which artifact we're interested in
-        showArtifactLinks( exchange, 200, workflow, latest );
+        showArtifactLinks( exchange, 300, workflow, latest );
         return;
       }
 
@@ -113,6 +114,9 @@ class LatestArtifactHandler implements HttpHandler {
         return;
       }
 
+      Duration cacheLife = Duration.between( Instant.now(), latest.expiry() );
+      exchange.getResponseHeaders().add( "cache-control",
+          "public; immutable; max-age=" + cacheLife.getSeconds() );
       ServeUtil.redirect( exchange, String.format(
           "/artifacts/%s/%s/%s/%s",
           workflow.repo().owner(), workflow.repo().repo(), selected.artifact().id(),
@@ -163,14 +167,16 @@ class LatestArtifactHandler implements HttpHandler {
 
   private static void showArtifactLinks( HttpExchange exchange, int status, Workflow workflow,
       LatestArtifact latest ) throws IOException {
+
+    Function<NamedArtifact, String> artifactPath = na -> String.format( "/latest/%s/%s/%s/%s",
+        workflow.repo().owner(),
+        workflow.repo().repo(),
+        workflow.name(),
+        na.name() );
+    latest.artifacts().forEach( a -> exchange.getResponseHeaders()
+        .add( "link", "<" + artifactPath.apply( a ) + ">; rel=alternate" ) );
     BiConsumer<Html, NamedArtifact> artifactItem = ( html, artifact ) -> {
-      html.li( i -> i.a(
-          String.format( "/latest/%s/%s/%s/%s",
-              workflow.repo().owner(),
-              workflow.repo().repo(),
-              workflow.name(),
-              artifact.name() ),
-          artifact.name() ) );
+      html.li( i -> i.a( artifactPath.apply( artifact ), artifact.name() ) );
     };
     ServeUtil.respond( exchange, status, new Html()
         .head( h -> h
@@ -184,11 +190,8 @@ class LatestArtifactHandler implements HttpHandler {
             .conditional( c -> c
                 .p( "These stable links will redirect to the latest artifacts for the ",
                     workflow.name(), " workflow on the default branch. ",
-                    "Feel free to append path components to address files within the artifacts" )
-                .ul( u -> u
-                    .repeat( artifactItem ).over( latest.artifacts() ) )
-                .p( "If you use these links after ", latest.expiry,
-                    ", then they might redirect to a newer artifact" ) )
+                    "Feel free to append path components to address files within the artifacts." )
+                .ul( u -> u.repeat( artifactItem ).over( latest.artifacts() ) ) )
             .on( !latest.artifacts().isEmpty() ) )
         .toString() );
   }

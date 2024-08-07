@@ -1,6 +1,9 @@
-package dev.flowty.bowlby.test;
+package dev.flowty.bowlby.it;
 
+import static dev.flowfty.bowlby.model.BowlbySystem.Actors.ARTIFACTS;
+import static dev.flowfty.bowlby.model.BowlbySystem.Actors.BOWLBY;
 import static dev.flowfty.bowlby.model.BowlbySystem.Actors.BROWSER;
+import static dev.flowfty.bowlby.model.BowlbySystem.Actors.GITHUB;
 import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.BORING;
 import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.RNG;
 
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
@@ -19,23 +23,28 @@ import com.mastercard.test.flow.assrt.junit5.Flocessor;
 import com.mastercard.test.flow.msg.web.WebSequence;
 
 import dev.flowfty.bowlby.model.BowlbySystem;
-import dev.flowfty.bowlby.model.BowlbySystem.Actors;
+import dev.flowty.bowlby.app.Main;
+import dev.flowty.bowlby.app.cfg.Parameters;
+import dev.flowty.bowlby.test.TestLog;
 
 /**
- * Exercises the browser in isolation
+ * Exercises the complete system, clicking at the browser and hitting github on
+ * the backend.
  */
 @SuppressWarnings("static-method")
-class BrowserIT {
+@EnabledIfEnvironmentVariable(named = "BOWLBY_GH_AUTH_TOKEN", matches = ".+",
+    disabledReason = "auth token required to exercise github integration")
+class EndToEndIT {
 
-  private static MockHost mock;
+  private static Main app;
 
   /**
-   * Starts the mocked bowlby instance
+   * Starts the bowlby instance
    */
   @BeforeAll
   static void start() {
-    mock = new MockHost( Actors.BOWLBY );
-    mock.start();
+    app = new Main( new Parameters( "-p", "0" ) );
+    app.start();
   }
 
   /**
@@ -43,16 +52,14 @@ class BrowserIT {
    */
   @TestFactory
   Stream<DynamicNode> tests() {
-    return new Flocessor( "browser", BowlbySystem.MODEL )
-        .system( State.LESS, BROWSER )
+    return new Flocessor( "end-to-end", BowlbySystem.MODEL )
+        .system( State.FUL, BROWSER, BOWLBY, GITHUB, ARTIFACTS )
         .masking( BORING, RNG )
         .logs( TestLog.TAIL )
-        .reporting( Reporting.ALWAYS, "browser" )
+        .reporting( Reporting.ALWAYS, "e2e" )
         .behaviour( asrt -> {
-          mock.seedResponses( asrt );
-
           WebSequence request = (WebSequence) asrt.expected().request().child();
-          request.set( "bowlby_url", "http:/" + mock.address() );
+          request.set( "bowlby_url", "http:/" + app.address() );
 
           WebDriver driver = driver();
 
@@ -64,7 +71,7 @@ class BrowserIT {
           asrt.actual()
               .request( actionResults )
               .response( response );
-          asrt.assertConsequests( mock.captured() );
+
         } )
         .tests();
   }
@@ -77,7 +84,7 @@ class BrowserIT {
     if( _driver != null ) {
       _driver.close();
     }
-    mock.stop();
+    app.stop();
   }
 
   private static WebDriver _driver;

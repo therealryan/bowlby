@@ -6,6 +6,7 @@ import com.mastercard.test.flow.Unpredictable;
 import com.mastercard.test.flow.model.LazyModel;
 
 import dev.flowfty.bowlby.model.flow.Index;
+import dev.flowfty.bowlby.model.flow.Latest;
 
 /**
  * Models the expected behaviour of the system
@@ -36,7 +37,7 @@ public class BowlbySystem {
     /**
      * The mysterious download host where the artifacts are supplied from
      */
-    ARTIFACT_HOST;
+    ARTIFACTS;
   }
 
   /**
@@ -58,6 +59,7 @@ public class BowlbySystem {
    */
   public static final Model MODEL = new LazyModel( "Bowlby" )
       .with( Index.class )
+      .with( Latest.class )
 
   ;
 }

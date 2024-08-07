@@ -108,8 +108,7 @@ class ServeUtil {
     LOG.debug( "redirecting to {}", destination );
     exchange.getResponseHeaders()
         .add( "location", destination );
-    exchange.sendResponseHeaders( 303, 0 );
-    exchange.getResponseBody().close();
+    exchange.sendResponseHeaders( 303, -1 );
   }
 
   /**

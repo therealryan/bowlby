@@ -3,12 +3,14 @@ package dev.flowty.bowlby.app.github;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
@@ -51,7 +53,9 @@ public class GithubApiClient {
 
   private final String apiHost;
   private final String authToken;
-  private final HttpClient http = HttpClient.newBuilder().build();
+  private final HttpClient http = HttpClient.newBuilder()
+      .version( Version.HTTP_1_1 )
+      .build();
 
   /**
    * Holds the last time that we made an api call.
@@ -264,7 +268,12 @@ public class GithubApiClient {
     LOG.debug( "Sending request {}", request );
     HttpResponse<T> response = http.send( request, handler );
     if( LOG.isDebugEnabled() ) {
-      LOG.debug( "Got response {}\n{}", response, Message.toJson( response.body() ) );
+      LOG.debug( "Got response\n{}\n{}\n{}",
+          response,
+          response.headers().map().entrySet().stream()
+              .map( e -> e.getKey() + ": " + e.getValue().stream().collect( joining( ", " ) ) )
+              .collect( joining( "\n" ) ),
+          Message.toJson( response.body() ) );
     }
 
     lastCall = Instant.now();

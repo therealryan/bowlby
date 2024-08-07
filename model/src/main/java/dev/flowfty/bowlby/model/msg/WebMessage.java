@@ -27,8 +27,27 @@ public class WebMessage {
   public static Message index() {
     return new WebSequence()
         .set( "bowlby_url", "http://determinedatruntime.com" )
+        .set( "path", "/" )
         .operation( "index", ( driver, params ) -> {
-          driver.navigate().to( params.get( "bowlby_url" ) );
+          driver.navigate().to( params.get( "bowlby_url" ) + params.get( "path" ) );
+        } )
+        .masking( Unpredictables.RNG, m -> m
+            .replace( "bowlby_url", "_masked_" ) );
+  }
+
+  /**
+   * @param workflow A workflow URL
+   * @return submits a workflow url into the form
+   */
+  public static Message submit( String workflow ) {
+    return new WebSequence()
+        .set( "bowlby_url", "http://determinedatruntime.com" )
+        .set( "workflow_link", workflow )
+        .operation( "submit", ( driver, params ) -> {
+          driver.findElement( By.id( "link_input" ) )
+              .sendKeys( params.get( "workflow_link" ) );
+          driver.findElement( By.id( "submit_input" ) )
+              .click();
         } )
         .masking( Unpredictables.RNG, m -> m
             .replace( "bowlby_url", "_masked_" ) );
@@ -54,7 +73,11 @@ public class WebMessage {
           params.put( "lists", summarise( driver, "ul" ) );
         } )
         .masking( Unpredictables.RNG, m -> m
-            .string( "url", s -> s.replaceAll( "^.*:\\d+(.*)$", "_masked_$1" ) ) );
+            .string( "url", s -> s.replaceAll( "^.*:\\d+(.*)$", "_masked_$1" ) )
+            .string( "header", s -> s.replaceAll( "\\(.*:\\d+", "_masked_" ) )
+            .string( "lists", s -> s.replaceAll( "\\(.*:\\d+", "_masked_" ) )
+            .string( "text", s -> s.replaceAll(
+                "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d+Z", "_masked_" ) ) );
   }
 
   private static String summarise( WebDriver driver, String tag ) {
@@ -77,10 +100,19 @@ public class WebMessage {
               .map( input -> input.getAttribute( "name" ) + ":" + input.getAttribute( "type" ) )
               .collect( joining( "," ) ) );
     }
-    if( "a".equals( e.getTagName() ) || "a".equals( e.getTagName() ) ) {
+    if( "a".equals( e.getTagName() ) ) {
       return "[" + e.getText() + "](" + e.getAttribute( "href" ) + ")";
     }
-    if( "h1".equals( e.getTagName() ) || "a".equals( e.getTagName() ) ) {
+    if( "h1".equals( e.getTagName() ) ) {
+      return summariseChildren( driver, e, "a" );
+    }
+    if( "p".equals( e.getTagName() ) ) {
+      return e.getText();
+    }
+    if( "ul".equals( e.getTagName() ) ) {
+      return summariseChildren( driver, e, "li" );
+    }
+    if( "li".equals( e.getTagName() ) ) {
       return summariseChildren( driver, e, "a" );
     }
 
