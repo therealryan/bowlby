@@ -37,7 +37,10 @@ public class Main {
     GithubApiClient ghClient = new GithubApiClient(
         parameters.githubApiHost(),
         parameters.authToken() );
-    Artifacts artifacts = new Artifacts( ghClient, parameters.artifactCacheDuration() );
+    Artifacts artifacts = new Artifacts(
+        ghClient,
+        parameters.dir(),
+        parameters.artifactCacheDuration() );
     server = new Server(
         parameters.port(),
         parameters.repos(),

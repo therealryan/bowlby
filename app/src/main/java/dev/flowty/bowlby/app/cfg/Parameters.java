@@ -1,5 +1,7 @@
 package dev.flowty.bowlby.app.cfg;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,6 +35,13 @@ public class Parameters {
       .filter( v -> v.matches( "\\d+" ) )
       .map( Integer::parseInt )
       .orElse( 56567 );
+
+  @Option(names = { "-d", "--dir" }, description = """
+      The directory in which to cache artifacts.
+      Defaults to 'bowlby' under the system's temp directory.
+      Overrides environment variable 'BOWLBY_DIR'""")
+  private String cacheDir = Optional.ofNullable( System.getenv( "BOWLBY_DIR" ) )
+      .orElse( System.getProperty( "java.io.tmpdir" ) + "/bowlby" );
 
   @Option(names = { "-g", "--github" }, description = """
       The hostname to target with github API requests.
@@ -106,6 +115,13 @@ public class Parameters {
    */
   public int port() {
     return port;
+  }
+
+  /**
+   * @return The directory in which to cache downloaded artifacts
+   */
+  public Path dir() {
+    return Paths.get( cacheDir );
   }
 
   /**

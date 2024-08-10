@@ -1,4 +1,4 @@
-package dev.flowfty.bowlby.model.msg.ntr;
+package dev.flowty.bowlby.model.msg.ntr;
 
 import java.util.function.Consumer;
 
@@ -6,7 +6,7 @@ import com.mastercard.test.flow.Message;
 import com.mastercard.test.flow.builder.mutable.MutableInteraction;
 import com.mastercard.test.flow.util.InteractionPredicate;
 
-import dev.flowfty.bowlby.model.BowlbySystem.Actors;
+import dev.flowty.bowlby.model.BowlbySystem.Actors;
 
 /**
  * Functions for working with interations

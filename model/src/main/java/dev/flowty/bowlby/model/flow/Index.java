@@ -1,8 +1,8 @@
-package dev.flowfty.bowlby.model.flow;
+package dev.flowty.bowlby.model.flow;
 
-import static dev.flowfty.bowlby.model.msg.ntr.Interactions.BROWSER;
-import static dev.flowfty.bowlby.model.msg.ntr.Interactions.rq;
-import static dev.flowfty.bowlby.model.msg.ntr.Interactions.rs;
+import static dev.flowty.bowlby.model.msg.ntr.Interactions.BROWSER;
+import static dev.flowty.bowlby.model.msg.ntr.Interactions.rq;
+import static dev.flowty.bowlby.model.msg.ntr.Interactions.rs;
 
 import com.mastercard.test.flow.Flow;
 import com.mastercard.test.flow.builder.Creator;
@@ -13,18 +13,22 @@ import com.mastercard.test.flow.msg.http.HttpRes;
 import com.mastercard.test.flow.util.TaggedGroup;
 import com.mastercard.test.flow.util.Tags;
 
-import dev.flowfty.bowlby.model.BowlbySystem.Actors;
-import dev.flowfty.bowlby.model.msg.HttpMessage;
-import dev.flowfty.bowlby.model.msg.WebMessage;
-import dev.flowfty.bowlby.model.msg.ntr.Interactions;
+import dev.flowty.bowlby.model.BowlbySystem.Actors;
+import dev.flowty.bowlby.model.msg.HttpMessage;
+import dev.flowty.bowlby.model.msg.WebMessage;
+import dev.flowty.bowlby.model.msg.ntr.Interactions;
 
 /**
  * Flows that explore the behaviour of the index
  */
 public class Index extends EagerModel {
   /***/
-  public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "200", "404" );
+  public static final TaggedGroup MODEL_TAGS = new TaggedGroup()
+      .union( "200", "404" );
 
+  /**
+   * A flow that gets the bowlby index
+   */
   public Flow get;
 
   /***/
@@ -50,12 +54,12 @@ public class Index extends EagerModel {
                 .tags( Tags.add( "icon" ) )
                 .request( HttpMessage.chromeRequest( "GET", "/favicon.ico" ) )
                 .response( HttpMessage.iconResponse() ) )
-            .response( WebMessage.dumpPage() ) ) );
+            .response( WebMessage.summarise() ) ) );
 
     Flow notFound = Deriver.build( get, flow -> flow
         .meta( data -> data
             .description( "not found" )
-            .tags( Tags.add( "404" ) )
+            .tags( Tags.add( "404" ), Tags.remove( "200" ) )
             .motivation( "Requesting a non-existent page" ) )
         .prerequisite( get )
         .update( BROWSER,

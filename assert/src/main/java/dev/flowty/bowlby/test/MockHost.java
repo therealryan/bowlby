@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 
@@ -34,23 +35,36 @@ public class MockHost {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger( MockHost.class );
 
   private final Actor actor;
+  private final Consequests captured;
   private final HttpServer server;
 
   private final Deque<HttpRes> responses = new ArrayDeque<>();
-  private final Consequests captured = new Consequests();
 
   /**
-   * @param actor The system component that is being mocked
+   * @param actor    The system component that is being mocked
+   * @param captured Where to put captured requests
+   */
+  public MockHost( Actor actor, Consequests captured ) {
+    this( actor, captured, msg -> {
+      // no custom behaviour
+    } );
+  }
+
+  /**
+   * @param actor     The system component that is being mocked
+   * @param captured  Where to put captured requests
+   * @param customise How to alter responses before returning them
    */
   @SuppressWarnings("resource")
-  public MockHost( Actor actor ) {
+  public MockHost( Actor actor, Consequests captured, Consumer<HttpRes> customise ) {
     this.actor = actor;
+    this.captured = captured;
     try {
       server = HttpServer.create( new InetSocketAddress( 0 ), 0 );
       server.setExecutor( Executors.newCachedThreadPool() );
       server.createContext( "/", exchange -> {
         HttpReq req = request( exchange );
-        LOG.info( "Capturing {}", req.assertable() );
+        LOG.info( "Capturing request to {}:\n{}", actor, req.assertable() );
         captured.capture( actor, req.content() );
 
         HttpRes res = responses.poll();
@@ -58,7 +72,8 @@ public class MockHost {
           LOG.error( "We're run out of responses!" );
         }
         else {
-          LOG.info( "Responding {}", res.assertable() );
+          customise.accept( res );
+          LOG.info( "Responding from {}:\n {}", actor, res.assertable() );
         }
         respond( exchange, res );
       } );
@@ -82,13 +97,8 @@ public class MockHost {
         .map( ntr -> ntr.response().child() )
         .map( msg -> (HttpRes) msg )
         .forEach( responses::add );
-  }
 
-  /**
-   * @return The captured requests
-   */
-  public Consequests captured() {
-    return captured;
+    LOG.debug( "Seeded {} responses for {}", responses.size(), actor );
   }
 
   private static HttpReq request( HttpExchange exchange ) {

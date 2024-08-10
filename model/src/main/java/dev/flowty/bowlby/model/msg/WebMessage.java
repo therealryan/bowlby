@@ -1,4 +1,4 @@
-package dev.flowfty.bowlby.model.msg;
+package dev.flowty.bowlby.model.msg;
 
 import static java.util.stream.Collectors.joining;
 
@@ -10,7 +10,7 @@ import org.openqa.selenium.WebElement;
 import com.mastercard.test.flow.Message;
 import com.mastercard.test.flow.msg.web.WebSequence;
 
-import dev.flowfty.bowlby.model.BowlbySystem.Unpredictables;
+import dev.flowty.bowlby.model.BowlbySystem.Unpredictables;
 
 /**
  * browser-interaction messages
@@ -54,9 +54,22 @@ public class WebMessage {
   }
 
   /**
+   * @param text The text of the link to click
+   * @return A sequence that clicks a named link
+   */
+  public static Message clickLink( String text ) {
+    return new WebSequence()
+        .set( "link_text", text )
+        .operation( "click", ( driver, params ) -> {
+          driver.findElement( By.linkText( params.get( "link_text" ) ) )
+              .click();
+        } );
+  }
+
+  /**
    * @return extracts page details
    */
-  public static Message dumpPage() {
+  public static Message summarise() {
     return new WebSequence()
         .set( "url", "http://[::]:56567/" )
         .set( "forms", "sending to _masked_/ with inputs [link:text,:submit]" )
@@ -73,9 +86,9 @@ public class WebMessage {
           params.put( "lists", summarise( driver, "ul" ) );
         } )
         .masking( Unpredictables.RNG, m -> m
-            .string( "url", s -> s.replaceAll( "^.*:\\d+(.*)$", "_masked_$1" ) )
-            .string( "header", s -> s.replaceAll( "\\(.*:\\d+", "_masked_" ) )
-            .string( "lists", s -> s.replaceAll( "\\(.*:\\d+", "_masked_" ) )
+            .string( "url", s -> s.replaceAll( "\\d+", "_masked_" ) )
+            .string( "header", s -> s.replaceAll( "\\d+", "_masked_" ) )
+            .string( "lists", s -> s.replaceAll( "\\d+", "_masked_" ) )
             .string( "text", s -> s.replaceAll(
                 "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d+Z", "_masked_" ) ) );
   }

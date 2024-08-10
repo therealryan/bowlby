@@ -1,4 +1,4 @@
-package dev.flowfty.bowlby.model;
+package dev.flowty.bowlby.model;
 
 import java.util.stream.Stream;
 

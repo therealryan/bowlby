@@ -1,8 +1,8 @@
 package dev.flowty.bowlby.test;
 
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.BROWSER;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.BORING;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.RNG;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.BROWSER;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.BORING;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.RNG;
 
 import java.util.stream.Stream;
 
@@ -14,12 +14,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
+import com.mastercard.test.flow.assrt.Consequests;
 import com.mastercard.test.flow.assrt.Reporting;
 import com.mastercard.test.flow.assrt.junit5.Flocessor;
 import com.mastercard.test.flow.msg.web.WebSequence;
 
-import dev.flowfty.bowlby.model.BowlbySystem;
-import dev.flowfty.bowlby.model.BowlbySystem.Actors;
+import dev.flowty.bowlby.model.BowlbySystem;
+import dev.flowty.bowlby.model.BowlbySystem.Actors;
 
 /**
  * Exercises the browser in isolation
@@ -27,14 +28,14 @@ import dev.flowfty.bowlby.model.BowlbySystem.Actors;
 @SuppressWarnings("static-method")
 class BrowserTest {
 
-  private static MockHost mock;
+  private static final Consequests consequests = new Consequests();
+  private static final MockHost mock = new MockHost( Actors.BOWLBY, consequests );
 
   /**
    * Starts the mocked bowlby instance
    */
   @BeforeAll
   static void start() {
-    mock = new MockHost( Actors.BOWLBY );
     mock.start();
   }
 
@@ -52,7 +53,9 @@ class BrowserTest {
           mock.seedResponses( asrt );
 
           WebSequence request = (WebSequence) asrt.expected().request().child();
-          request.set( "bowlby_url", "http:/" + mock.address() );
+          if( request.get( "bowlby_url" ) != null ) {
+            request.set( "bowlby_url", "http:/" + mock.address() );
+          }
 
           WebDriver driver = driver();
 
@@ -64,7 +67,7 @@ class BrowserTest {
           asrt.actual()
               .request( actionResults )
               .response( response );
-          asrt.assertConsequests( mock.captured() );
+          asrt.assertConsequests( consequests );
         } )
         .tests();
   }

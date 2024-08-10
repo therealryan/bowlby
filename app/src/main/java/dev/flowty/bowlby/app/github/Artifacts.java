@@ -3,7 +3,6 @@ package dev.flowty.bowlby.app.github;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
@@ -21,19 +20,19 @@ public class Artifacts {
 
   private static final Logger LOG = LoggerFactory.getLogger( Artifacts.class );
 
-  private static final Path DOWNLOAD_ROOT = Paths.get(
-      System.getProperty( "java.io.tmpdir" ), "bowlby", "github" );
-
   private final GithubApiClient client;
+  private final Path downloadRoot;
   private final Duration artifactValidity;
 
   /**
    * @param client           how to interact with github
+   * @param dir              The bowlby directory
    * @param artifactValidity how long an artifact can go without being accessed
    *                         before we delete it
    */
-  public Artifacts( GithubApiClient client, Duration artifactValidity ) {
+  public Artifacts( GithubApiClient client, Path dir, Duration artifactValidity ) {
     this.client = client;
+    downloadRoot = dir.resolve( "github" );
     this.artifactValidity = artifactValidity;
   }
 
@@ -47,7 +46,7 @@ public class Artifacts {
   public Path get( Artifact artifact ) {
     purgeStaleFiles();
 
-    Path destination = DOWNLOAD_ROOT
+    Path destination = downloadRoot
         .resolve( artifact.repo().owner() )
         .resolve( artifact.repo().repo() )
         .resolve( artifact.id() + ".zip" );
@@ -63,34 +62,36 @@ public class Artifacts {
    * Deletes all files in the download dir that haven't been accessed recently
    */
   private void purgeStaleFiles() {
-    Instant threshold = Instant.now().minus( artifactValidity );
+    if( Files.exists( downloadRoot ) ) {
+      Instant threshold = Instant.now().minus( artifactValidity );
 
-    try( Stream<Path> files = Files.walk( DOWNLOAD_ROOT ) ) {
-      files
-          .filter( Files::isRegularFile )
-          .filter( file -> {
-            try {
-              return Files.readAttributes( file, BasicFileAttributes.class )
-                  .lastAccessTime()
-                  .toInstant()
-                  .isBefore( threshold );
-            }
-            catch( IOException e ) {
-              LOG.warn( "Failed to determine last access time of " + file, e );
-              return false;
-            }
-          } )
-          .forEach( stale -> {
-            try {
-              Files.delete( stale );
-            }
-            catch( IOException e ) {
-              LOG.error( "Failed to purge stale artifact " + stale, e );
-            }
-          } );
-    }
-    catch( Exception e ) {
-      LOG.error( "Failed to purge stale artifacts", e );
+      try( Stream<Path> files = Files.walk( downloadRoot ) ) {
+        files
+            .filter( Files::isRegularFile )
+            .filter( file -> {
+              try {
+                return Files.readAttributes( file, BasicFileAttributes.class )
+                    .lastAccessTime()
+                    .toInstant()
+                    .isBefore( threshold );
+              }
+              catch( IOException e ) {
+                LOG.warn( "Failed to determine last access time of " + file, e );
+                return false;
+              }
+            } )
+            .forEach( stale -> {
+              try {
+                Files.delete( stale );
+              }
+              catch( IOException e ) {
+                LOG.error( "Failed to purge stale artifact " + stale, e );
+              }
+            } );
+      }
+      catch( Exception e ) {
+        LOG.error( "Failed to purge stale artifacts", e );
+      }
     }
   }
 }

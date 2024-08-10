@@ -1,12 +1,12 @@
-package dev.flowfty.bowlby.model;
+package dev.flowty.bowlby.model;
 
 import com.mastercard.test.flow.Actor;
 import com.mastercard.test.flow.Model;
 import com.mastercard.test.flow.Unpredictable;
 import com.mastercard.test.flow.model.LazyModel;
 
-import dev.flowfty.bowlby.model.flow.Index;
-import dev.flowfty.bowlby.model.flow.Latest;
+import dev.flowty.bowlby.model.flow.Index;
+import dev.flowty.bowlby.model.flow.Latest;
 
 /**
  * Models the expected behaviour of the system

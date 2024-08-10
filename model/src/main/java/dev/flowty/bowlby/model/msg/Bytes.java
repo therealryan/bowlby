@@ -1,4 +1,4 @@
-package dev.flowfty.bowlby.model.msg;
+package dev.flowty.bowlby.model.msg;
 
 import java.util.Collections;
 import java.util.Optional;

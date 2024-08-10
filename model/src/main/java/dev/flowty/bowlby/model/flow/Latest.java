@@ -1,19 +1,22 @@
-package dev.flowfty.bowlby.model.flow;
+package dev.flowty.bowlby.model.flow;
 
 import com.mastercard.test.flow.Flow;
 import com.mastercard.test.flow.builder.Chain;
 import com.mastercard.test.flow.builder.Creator;
 import com.mastercard.test.flow.builder.Deriver;
 import com.mastercard.test.flow.model.EagerModel;
-import com.mastercard.test.flow.msg.json.Json;
+import com.mastercard.test.flow.msg.http.HttpMsg;
 import com.mastercard.test.flow.util.TaggedGroup;
 import com.mastercard.test.flow.util.Tags;
 
-import dev.flowfty.bowlby.model.BowlbySystem.Actors;
-import dev.flowfty.bowlby.model.msg.ApiMessage;
-import dev.flowfty.bowlby.model.msg.HttpMessage;
-import dev.flowfty.bowlby.model.msg.WebMessage;
-import dev.flowfty.bowlby.model.msg.ntr.Interactions;
+import dev.flowty.bowlby.model.BowlbySystem.Actors;
+import dev.flowty.bowlby.model.BowlbySystem.Unpredictables;
+import dev.flowty.bowlby.model.msg.ApiMessage;
+import dev.flowty.bowlby.model.msg.ArtifactMessage;
+import dev.flowty.bowlby.model.msg.ArtifactMessage.Artifact;
+import dev.flowty.bowlby.model.msg.HttpMessage;
+import dev.flowty.bowlby.model.msg.WebMessage;
+import dev.flowty.bowlby.model.msg.ntr.Interactions;
 
 /**
  * Flows that explore the get-latest-artifact behaviour
@@ -21,8 +24,12 @@ import dev.flowfty.bowlby.model.msg.ntr.Interactions;
 public class Latest extends EagerModel {
 
   /***/
-  public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "200", "404" );
+  public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "chain:workflow" )
+      .union( "200", "300", "303", "artifact", "latest", "workflow" );
 
+  /**
+   * @param index The source of the index-get flow
+   */
   public Latest( Index index ) {
     super( MODEL_TAGS );
 
@@ -31,7 +38,7 @@ public class Latest extends EagerModel {
     Flow get = Deriver.build( index.get,
         flow -> flow
             .meta( data -> data
-                .description( "get form" )
+                .description( "form" )
                 .motivation(
                     """
                         This chain illustrates the generation of stable links to the artifacts of the latest run of a workflow.
@@ -42,8 +49,8 @@ public class Latest extends EagerModel {
 
     Flow submit = Creator.build( flow -> flow
         .meta( data -> data
-            .description( "submit link" )
-            .tags( Tags.add( "latest", "submit", "workflow" ) )
+            .description( "submit" )
+            .tags( Tags.add( "latest", "workflow", "300", "303" ) )
             .motivation(
                 """
                     Submitting a workflow link via the form. Bowlby will:
@@ -75,26 +82,15 @@ public class Latest extends EagerModel {
                 .call( c -> c.to( Actors.GITHUB )
                     .tags( Tags.add( "branch" ) )
                     .request( ApiMessage.request( "/repos/therealryan/bowlby" ) )
-                    .response( ApiMessage.response(
-                        "default_branch", "main",
-                        "license", Json.EMPTY_MAP,
-                        "owner", Json.EMPTY_MAP,
-                        "permissions", Json.EMPTY_MAP,
-                        "topics", Json.EMPTY_LIST ) ) )
+                    .response( ApiMessage.response( "default_branch", "main" ) ) )
                 .call( c -> c.to( Actors.GITHUB )
                     .tags( Tags.add( "run" ) )
                     .request( ApiMessage.request(
                         "/repos/therealryan/bowlby/actions/workflows/artifacts.yml/runs?branch=main&status=completed&per_page=1" ) )
                     .response( ApiMessage.response(
-                        "workflow_runs[0].id", 10249960639L,
-                        "workflow_runs[0].actor", Json.EMPTY_MAP,
-                        "workflow_runs[0].head_commit.author", Json.EMPTY_MAP,
-                        "workflow_runs[0].head_commit.committer", Json.EMPTY_MAP,
-                        "workflow_runs[0].head_repository.owner", Json.EMPTY_MAP,
-                        "workflow_runs[0].pull_requests", Json.EMPTY_LIST,
-                        "workflow_runs[0].referenced_workflows", Json.EMPTY_LIST,
-                        "workflow_runs[0].repository.owner", Json.EMPTY_MAP,
-                        "workflow_runs[0].triggering_actor", Json.EMPTY_MAP ) ) )
+                        "workflow_runs[0].id", 10249960639L )
+                        .masking( Unpredictables.RNG,
+                            m -> m.replace( "workflow_runs[0].id", "_masked_" ) ) ) )
                 .call( c -> c.to( Actors.GITHUB )
                     .tags( Tags.add( "artifacts" ) )
                     .request( ApiMessage.request(
@@ -102,12 +98,10 @@ public class Latest extends EagerModel {
                     .response( ApiMessage.response(
                         "artifacts[0].id", 1776512962,
                         "artifacts[0].name", "artifact_alpha",
-                        "artifacts[0].workflow_run", Json.EMPTY_MAP,
                         "artifacts[1].id", 1776513003,
-                        "artifacts[1].name", "artifact_beta",
-                        "artifacts[1].workflow_run", Json.EMPTY_MAP ) ) )
+                        "artifacts[1].name", "artifact_beta" ) ) )
                 .response( HttpMessage.linkChoiceResponse( "artifact_alpha", "artifact_beta" ) ) )
-            .response( WebMessage.dumpPage()
+            .response( WebMessage.summarise()
                 .set( "header", "[bowlby](http://[::]:56567/)" )
                 .set( "forms", "" )
                 .set( "lists",
@@ -120,6 +114,50 @@ public class Latest extends EagerModel {
                 .set( "url", "http://[::]:56567/latest/therealryan/bowlby/artifacts.yml" ) ) ),
         chain );
 
-    members( flatten( get, submit ) );
+    Flow alpha = Creator.build( flow -> flow
+        .meta( data -> data
+            .description( "alpha" )
+            .tags( Tags.add( "latest", "artifact" ) )
+            .motivation(
+                """
+                    1. Clicks on one of the latest-artifact links
+                    1. Get redirected to the static link for that artifact
+                    1. Downloads the artifact and displays a file listing""" ) )
+        .prerequisite( submit )
+        .call( a -> a
+            .from( Actors.USER )
+            .to( Actors.BROWSER )
+            .request( WebMessage.clickLink( "artifact_alpha" ) )
+            .call( b -> b.to( Actors.BOWLBY )
+                .tags( Tags.add( "redirect" ) )
+                .request( HttpMessage.chromeRequest( "GET",
+                    "/latest/therealryan/bowlby/artifacts.yml/artifact_alpha" ) )
+                .response( HttpMessage.redirectResponse(
+                    "/artifacts/therealryan/bowlby/1776512962/" )
+                    .set( HttpMsg.header( "cache-control" ),
+                        "public; immutable; max-age=599" ) ) )
+            .call( b -> b.to( Actors.BOWLBY )
+                .tags( Tags.add( "artifact" ) )
+                .request( HttpMessage.chromeRequest( "GET",
+                    "/artifacts/therealryan/bowlby/1776512962/" ) )
+                .call( c -> c.to( Actors.GITHUB )
+                    .request( ApiMessage.request(
+                        "/repos/therealryan/bowlby/actions/artifacts/1776512962/zip" ) )
+                    .response( ApiMessage.artifactRedirect() ) )
+                .call( c -> c.to( Actors.ARTIFACTS )
+                    .request( ArtifactMessage.get( "/a/very/long/url" ) )
+                    .response( ArtifactMessage.data( Artifact.ALPHA ) ) )
+                .response( HttpMessage.directoryListing( "page.html", "script.js" ) ) )
+            .response( WebMessage.summarise()
+                .set( "forms", "" )
+                .set( "header", "[bowlby](http://[::]:41289/)" )
+                .set( "lists",
+                    """
+                        [page.html](http://[::]:56567/artifacts/therealryan/bowlby/1776512962/page.html)
+                        [script.js](http://[::]:56567/artifacts/therealryan/bowlby/1776512962/script.js)""" )
+                .set( "url", "http://[::]:56567/artifacts/therealryan/bowlby/1776512962/" ) ) ),
+        chain );
+
+    members( flatten( get, submit, alpha ) );
   }
 }

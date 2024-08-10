@@ -1,11 +1,11 @@
 package dev.flowty.bowlby.it;
 
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.ARTIFACTS;
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.BOWLBY;
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.BROWSER;
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.GITHUB;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.BORING;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.RNG;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.ARTIFACTS;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.BOWLBY;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.BROWSER;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.GITHUB;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.BORING;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.RNG;
 
 import java.util.stream.Stream;
 
@@ -18,13 +18,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
+import com.mastercard.test.flow.assrt.Replay;
 import com.mastercard.test.flow.assrt.Reporting;
 import com.mastercard.test.flow.assrt.junit5.Flocessor;
 import com.mastercard.test.flow.msg.web.WebSequence;
 
-import dev.flowfty.bowlby.model.BowlbySystem;
 import dev.flowty.bowlby.app.Main;
 import dev.flowty.bowlby.app.cfg.Parameters;
+import dev.flowty.bowlby.model.BowlbySystem;
 import dev.flowty.bowlby.test.TestLog;
 
 /**
@@ -43,8 +44,10 @@ class EndToEndIT {
    */
   @BeforeAll
   static void start() {
-    app = new Main( new Parameters( "-p", "0" ) );
-    app.start();
+    if( !Replay.isActive() ) {
+      app = new Main( new Parameters( "-p", "0" ) );
+      app.start();
+    }
   }
 
   /**
@@ -59,7 +62,9 @@ class EndToEndIT {
         .reporting( Reporting.ALWAYS, "e2e" )
         .behaviour( asrt -> {
           WebSequence request = (WebSequence) asrt.expected().request().child();
-          request.set( "bowlby_url", "http:/" + app.address() );
+          if( request.get( "bowlby_url" ) != null ) {
+            request.set( "bowlby_url", "http:/" + app.address() );
+          }
 
           WebDriver driver = driver();
 
@@ -81,10 +86,12 @@ class EndToEndIT {
    */
   @AfterAll
   static void stop() {
-    if( _driver != null ) {
-      _driver.close();
+    if( !Replay.isActive() ) {
+      if( _driver != null ) {
+        _driver.close();
+      }
+      app.stop();
     }
-    app.stop();
   }
 
   private static WebDriver _driver;

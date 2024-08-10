@@ -1,4 +1,4 @@
-package dev.flowfty.bowlby.model.msg;
+package dev.flowty.bowlby.model.msg;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
@@ -11,7 +11,7 @@ import com.mastercard.test.flow.msg.http.HttpReq;
 import com.mastercard.test.flow.msg.http.HttpRes;
 import com.mastercard.test.flow.msg.xml.XML;
 
-import dev.flowfty.bowlby.model.BowlbySystem.Unpredictables;
+import dev.flowty.bowlby.model.BowlbySystem.Unpredictables;
 
 /**
  * A convenient source of http message content
@@ -85,6 +85,12 @@ public class HttpMessage {
                 .map( HttpMsg::header ) ) );
   }
 
+  /**
+   * Builds the "which artifact do you want" page response
+   *
+   * @param artifacts The artifact names
+   * @return The 300 response page
+   */
   public static Message linkChoiceResponse( String... artifacts ) {
     HttpRes res = new HttpRes()
         .set( HttpMsg.VERSION, "HTTP/1.1" )
@@ -111,6 +117,34 @@ public class HttpMessage {
     res.set( HttpMsg.header( "link" ), Stream.of( artifacts )
         .map( a -> "</latest/therealryan/bowlby/artifacts.yml/" + a + ">; rel=alternate" )
         .collect( joining( "," ) ) );
+
+    return res;
+  }
+
+  /**
+   * Builds an artifact-directory-listing page response
+   *
+   * @param files The files in the dir
+   * @return The 200 response page
+   */
+  public static Message directoryListing( String... files ) {
+    HttpRes res = new HttpRes()
+        .set( HttpMsg.VERSION, "HTTP/1.1" )
+        .set( HttpRes.STATUS, 200 )
+        .set( HttpMsg.header( "content-type" ), "text/html; charset=utf-8" )
+        .set( HttpMsg.BODY, new XML() )
+        .set( "/html/head/title", "bowlby" )
+        .set( "/html/body/h1/a", "bowlby" )
+        .set( "/html/body/h1/a/@href", "/" )
+        .masking( Unpredictables.BORING, m -> m
+            .delete( Stream.of(
+                "content-length", "date" )
+                .map( HttpMsg::header ) ) );
+
+    for( int i = 0; i < files.length; i++ ) {
+      res.set( "/html/body/ul/li[" + i + "]/a", files[i] );
+      res.set( "/html/body/ul/li[" + i + "]/a/@href", files[i] );
+    }
 
     return res;
   }

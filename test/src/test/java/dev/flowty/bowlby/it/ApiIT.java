@@ -1,8 +1,8 @@
 package dev.flowty.bowlby.it;
 
-import static dev.flowfty.bowlby.model.BowlbySystem.Actors.GITHUB;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.BORING;
-import static dev.flowfty.bowlby.model.BowlbySystem.Unpredictables.RNG;
+import static dev.flowty.bowlby.model.BowlbySystem.Actors.GITHUB;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.BORING;
+import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.RNG;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
@@ -22,7 +22,7 @@ import com.mastercard.test.flow.assrt.junit5.Flocessor;
 import com.mastercard.test.flow.msg.http.HttpMsg;
 import com.mastercard.test.flow.msg.http.HttpReq;
 
-import dev.flowfty.bowlby.model.BowlbySystem;
+import dev.flowty.bowlby.model.BowlbySystem;
 import dev.flowty.bowlby.test.HttpFlow;
 import dev.flowty.bowlby.test.TestLog;
 
@@ -34,6 +34,7 @@ import dev.flowty.bowlby.test.TestLog;
     disabledReason = "auth token required to exercise github integration")
 public class ApiIT {
 
+  @SuppressWarnings("resource")
   private static final HttpClient HTTP = HttpClient.newBuilder().build();
   private static final URI TARGET;
   static {
@@ -54,7 +55,8 @@ public class ApiIT {
         .system( State.FUL, GITHUB )
         .masking( BORING, RNG )
         .logs( TestLog.TAIL )
-        .reporting( Reporting.ALWAYS, "github" )
+        // reports will leak the token!
+        .reporting( Reporting.NEVER, "github" )
         .behaviour( asrt -> {
           HttpReq request = (HttpReq) asrt.expected().request().child();
 
