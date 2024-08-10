@@ -77,7 +77,7 @@ public class WebMessage {
         .set( "lists", "" )
         .set( "text", "" )
         .set( "title", "bowlby" )
-        .operation( "dump", ( driver, params ) -> {
+        .operation( "summarise", ( driver, params ) -> {
           params.put( "url", driver.getCurrentUrl() );
           params.put( "title", driver.getTitle() );
           params.put( "header", summarise( driver, "h1" ) );

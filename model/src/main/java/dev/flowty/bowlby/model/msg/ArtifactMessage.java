@@ -15,6 +15,7 @@ import java.util.zip.ZipOutputStream;
 import com.mastercard.test.flow.msg.http.HttpMsg;
 import com.mastercard.test.flow.msg.http.HttpReq;
 import com.mastercard.test.flow.msg.http.HttpRes;
+import com.mastercard.test.flow.msg.txt.Text;
 
 import dev.flowty.bowlby.model.BowlbySystem.Unpredictables;
 
@@ -72,6 +73,29 @@ public class ArtifactMessage {
         throw new UncheckedIOException( ioe );
       }
     }
+
+    /**
+     * @param file A file within an artifact
+     * @return The file contents
+     */
+    public byte[] fileContent( String file ) {
+      try( ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          InputStream is = ArtifactMessage.class.getResourceAsStream(
+              "/" + dir + "/" + file ) ) {
+        if( is == null ) {
+          return null;
+        }
+        byte[] buff = new byte[1024];
+        int read;
+        while( (read = is.read( buff )) != -1 ) {
+          baos.write( buff, 0, read );
+        }
+        return baos.toByteArray();
+      }
+      catch( IOException ioe ) {
+        throw new UncheckedIOException( ioe );
+      }
+    }
   }
 
   /**
@@ -99,5 +123,32 @@ public class ArtifactMessage {
         .set( HttpRes.STATUS, 200 )
         .set( HttpMsg.header( "content-length" ), body.length )
         .set( HttpMsg.BODY, new Bytes( body ) );
+  }
+
+  /**
+   * @param artifact    The artifact
+   * @param file        A file within the artifact
+   * @param contentType The content type of the file
+   * @return The file content response
+   */
+  public static HttpRes file( Artifact artifact, String file, String contentType ) {
+    HttpRes res = new HttpRes()
+        .set( HttpMsg.VERSION, "HTTP/1.1" )
+        .set( HttpMsg.header( "cache-control" ), "max-age=31536000, immutable" );
+    byte[] content = artifact.fileContent( file );
+    if( content != null ) {
+      res.set( HttpRes.STATUS, 200 )
+          .set( HttpMsg.header( "content-length" ), content.length )
+          .set( HttpMsg.header( "content-type" ), contentType )
+          .set( HttpMsg.BODY, new Text( content ) );
+    }
+    else {
+      res.set( HttpRes.STATUS, 404 );
+    }
+
+    res.masking( Unpredictables.BORING, m -> m
+        .delete( HttpMsg.header( "date" ) ) );
+
+    return res;
   }
 }

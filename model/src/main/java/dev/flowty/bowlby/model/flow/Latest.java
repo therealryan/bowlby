@@ -158,6 +158,37 @@ public class Latest extends EagerModel {
                 .set( "url", "http://[::]:56567/artifacts/therealryan/bowlby/1776512962/" ) ) ),
         chain );
 
-    members( flatten( get, submit, alpha ) );
+    Flow page = Creator.build( flow -> flow
+        .meta( data -> data
+            .description( "page" )
+            .tags( Tags.add( "200" ) )
+            .motivation( "Clicking through to view an artifact file." ) )
+        .prerequisite( alpha )
+        .call( a -> a.from( Actors.USER ).to( Actors.BROWSER )
+            .request( WebMessage.clickLink( "page.html" ) )
+            .call( b -> b.to( Actors.BOWLBY )
+                .tags( Tags.add( "page" ) )
+                .request( HttpMessage.chromeRequest( "GET",
+                    "/artifacts/therealryan/bowlby/1776512962/page.html" ) )
+                .response( ArtifactMessage.file(
+                    Artifact.ALPHA, "page.html", "text/html" ) ) )
+            .call( b -> b.to( Actors.BOWLBY )
+                .tags( Tags.add( "script" ) )
+                .request( HttpMessage.chromeRequest( "GET",
+                    "/artifacts/therealryan/bowlby/1776512962/script.js" ) )
+                .response( ArtifactMessage.file(
+                    Artifact.ALPHA, "script.js", "text/javascript" ) ) )
+            .response( WebMessage.summarise()
+                .set( "forms", "" )
+                .set( "header", "" )
+                .set( "text", """
+                    Jeepers! A website!
+                    With javascript!""" )
+                .set( "title", "website" )
+                .set( "url", ""
+                    + "http://[::]:56567/artifacts/therealryan/bowlby/1776512962/page.html" ) ) ),
+        chain );
+
+    members( flatten( get, submit, alpha, page ) );
   }
 }
