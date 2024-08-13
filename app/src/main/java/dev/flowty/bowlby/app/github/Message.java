@@ -69,7 +69,10 @@ class Message {
           BodySubscribers.ofString( StandardCharsets.UTF_8 ),
           body -> {
             try {
-              LOG.trace( "Full response {}", body );
+              if( LOG.isTraceEnabled() ) {
+                LOG.trace( "Full response body {}",
+                    JSON.writeValueAsString( JSON.readValue( body, Object.class ) ) );
+              }
               return JSON.readValue( body, type );
             }
             catch( IOException e ) {

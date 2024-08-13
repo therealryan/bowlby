@@ -22,13 +22,13 @@ import com.mastercard.test.flow.msg.txt.Text;
 public class HttpFlow {
 
   /**
-   * Builds a request from flow data
+   * Builds a customisable request from flow data
    *
    * @param host The target of the request
    * @param req  The request content
-   * @return A sendable request
+   * @return A populated builder
    */
-  public static HttpRequest sendable( URI host, HttpReq req ) {
+  public static Builder builder( URI host, HttpReq req ) {
     URI uri = host.resolve( req.path() );
     Builder builder = HttpRequest.newBuilder()
         .uri( uri )
@@ -38,7 +38,18 @@ public class HttpFlow {
                 .orElse( new byte[0] ) ) );
 
     req.headers().forEach( builder::header );
-    return builder.build();
+    return builder;
+  }
+
+  /**
+   * Builds a complete request from flow data
+   *
+   * @param host The target of the request
+   * @param req  The request content
+   * @return A sendable request
+   */
+  public static HttpRequest sendable( URI host, HttpReq req ) {
+    return builder( host, req ).build();
   }
 
   /**

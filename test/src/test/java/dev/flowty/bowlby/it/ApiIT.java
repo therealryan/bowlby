@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.stream.Stream;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
 import com.mastercard.test.flow.assrt.Reporting;
 import com.mastercard.test.flow.assrt.junit5.Flocessor;
-import com.mastercard.test.flow.msg.http.HttpMsg;
 import com.mastercard.test.flow.msg.http.HttpReq;
 
 import dev.flowty.bowlby.model.BowlbySystem;
@@ -60,12 +60,17 @@ public class ApiIT {
         .behaviour( asrt -> {
           HttpReq request = (HttpReq) asrt.expected().request().child();
 
-          request.set( HttpMsg.header( "authorization" ),
-              "Bearer " + System.getenv( "BOWLBY_GH_AUTH_TOKEN" ) );
-
           try {
+            HttpRequest.Builder req = HttpFlow.builder( TARGET, request );
+
+            // Take careful note of how we're populating the auth token at the last possible
+            // moment, not passing the secret value outside of this class, not logging the
+            // request, and not populating it into the flow data model
+            req.setHeader( "authorization", "Bearer " + System.getenv( "BOWLBY_GH_AUTH_TOKEN" ) );
+            // we're trying to minimise the possibility of it leaking to disk
+
             HttpResponse<String> response = HTTP.send(
-                HttpFlow.sendable( TARGET, request ),
+                req.build(),
                 BodyHandlers.ofString() );
 
             asrt.actual()

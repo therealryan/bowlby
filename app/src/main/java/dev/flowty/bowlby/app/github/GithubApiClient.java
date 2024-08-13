@@ -265,11 +265,21 @@ public class GithubApiClient {
       now = Instant.now();
     }
 
-    LOG.debug( "Sending request {}", request );
+    if( LOG.isDebugEnabled() ) {
+      LOG.debug( "Sending request\n{} {}\n{}",
+          request.method(), request.uri(),
+          request.headers().map().entrySet().stream()
+              .map( e -> e.getKey() + ": " + e.getValue().stream()
+                  .map( v -> "authorization".equalsIgnoreCase( e.getKey() )
+                      ? "_masked_secret_"
+                      : v )
+                  .collect( joining( ", " ) ) )
+              .collect( joining( "\n" ) ) );
+    }
     HttpResponse<T> response = http.send( request, handler );
     if( LOG.isDebugEnabled() ) {
-      LOG.debug( "Got response\n{}\n{}\n{}",
-          response,
+      LOG.debug( "Got response\n{} {}\n{}\n{}",
+          response.version(), response.statusCode(),
           response.headers().map().entrySet().stream()
               .map( e -> e.getKey() + ": " + e.getValue().stream().collect( joining( ", " ) ) )
               .collect( joining( "\n" ) ),
