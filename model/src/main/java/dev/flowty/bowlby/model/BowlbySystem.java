@@ -5,8 +5,9 @@ import com.mastercard.test.flow.Model;
 import com.mastercard.test.flow.Unpredictable;
 import com.mastercard.test.flow.model.LazyModel;
 
+import dev.flowty.bowlby.model.flow.ArtifactLink;
 import dev.flowty.bowlby.model.flow.Index;
-import dev.flowty.bowlby.model.flow.Latest;
+import dev.flowty.bowlby.model.flow.LatestFromWorkflow;
 
 /**
  * Models the expected behaviour of the system
@@ -59,7 +60,8 @@ public class BowlbySystem {
    */
   public static final Model MODEL = new LazyModel( "Bowlby" )
       .with( Index.class )
-      .with( Latest.class )
+      .with( LatestFromWorkflow.class )
+      .with( ArtifactLink.class )
 
   ;
 }

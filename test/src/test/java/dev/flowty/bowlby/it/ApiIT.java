@@ -24,7 +24,6 @@ import com.mastercard.test.flow.msg.http.HttpReq;
 
 import dev.flowty.bowlby.model.BowlbySystem;
 import dev.flowty.bowlby.test.HttpFlow;
-import dev.flowty.bowlby.test.TestLog;
 
 /**
  * Exercises github in isolation
@@ -54,9 +53,7 @@ public class ApiIT {
     return new Flocessor( "github", BowlbySystem.MODEL )
         .system( State.FUL, GITHUB )
         .masking( BORING, RNG )
-        .logs( TestLog.TAIL )
-        // reports will leak the token!
-        .reporting( Reporting.NEVER, "github" )
+        .reporting( Reporting.ALWAYS, "github" )
         .behaviour( asrt -> {
           HttpReq request = (HttpReq) asrt.expected().request().child();
 

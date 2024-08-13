@@ -9,6 +9,7 @@ import com.mastercard.test.flow.Message;
 import com.mastercard.test.flow.msg.http.HttpMsg;
 import com.mastercard.test.flow.msg.http.HttpReq;
 import com.mastercard.test.flow.msg.http.HttpRes;
+import com.mastercard.test.flow.msg.txt.Text;
 import com.mastercard.test.flow.msg.xml.XML;
 
 import dev.flowty.bowlby.model.BowlbySystem.Unpredictables;
@@ -147,6 +148,25 @@ public class HttpMessage {
     }
 
     return res;
+  }
+
+  /**
+   * Builds an artifact0content text response
+   *
+   * @param body The expected file content
+   * @return The 200 response message
+   */
+  public static Message textResponse( String body ) {
+    return new HttpRes()
+        .set( HttpMsg.VERSION, "HTTP/1.1" )
+        .set( HttpRes.STATUS, 200 )
+        .set( HttpMsg.header( "cache-control" ), "max-age=31536000, immutable" )
+        .set( HttpMsg.header( "content-type" ), "text/plain" )
+        .set( HttpMsg.BODY, new Text( body ) )
+        .masking( Unpredictables.BORING, m -> m
+            .delete( Stream.of(
+                "content-length", "date" )
+                .map( HttpMsg::header ) ) );
   }
 
   /**

@@ -47,7 +47,7 @@ class LinkHandler implements HttpHandler {
           Matcher artifactMatch = GITHUB_ARTIFACT_LINK.matcher( link );
           if( artifactMatch.find() ) {
             ServeUtil.redirect( exchange, String.format(
-                "/artifacts/%s/%s/%s",
+                "/artifacts/%s/%s/%s/",
                 artifactMatch.group( 1 ), artifactMatch.group( 2 ), artifactMatch.group( 3 ) ) );
             return;
           }

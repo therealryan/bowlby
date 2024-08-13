@@ -93,6 +93,15 @@ public class WebMessage {
                 "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d+Z", "_masked_" ) ) );
   }
 
+  /**
+   * @return extracts the page text
+   */
+  public static Message text() {
+    return new WebSequence()
+        .operation( "dump text", ( driver, params ) -> params
+            .put( "text", driver.findElement( By.tagName( "html" ) ).getText() ) );
+  }
+
   private static String summarise( WebDriver driver, String tag ) {
     return driver.findElements( By.tagName( tag ) ).stream()
         .map( e -> summarise( driver, e ) )

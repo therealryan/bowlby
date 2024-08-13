@@ -21,7 +21,7 @@ import dev.flowty.bowlby.model.msg.ntr.Interactions;
 /**
  * Flows that explore the get-latest-artifact behaviour
  */
-public class Latest extends EagerModel {
+public class LatestFromWorkflow extends EagerModel {
 
   /***/
   public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "chain:workflow" )
@@ -30,7 +30,7 @@ public class Latest extends EagerModel {
   /**
    * @param index The source of the index-get flow
    */
-  public Latest( Index index ) {
+  public LatestFromWorkflow( Index index ) {
     super( MODEL_TAGS );
 
     Chain chain = new Chain( "workflow" );
