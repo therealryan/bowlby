@@ -9,3 +9,5 @@ github actions artifact proxy
  1. Wait for about 90 days for the artifact-link tests to fail, then fix them
    
 We've got an instance running at http://132.226.129.14:56567/
+
+Browse the latest test results [here](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html).
