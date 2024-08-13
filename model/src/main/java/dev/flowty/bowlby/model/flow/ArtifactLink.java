@@ -22,8 +22,8 @@ import dev.flowty.bowlby.model.msg.ntr.Interactions;
 public class ArtifactLink extends EagerModel {
 
   /***/
-  public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "chain:workflow" )
-      .union( "200", "303", "artifact" );
+  public static final TaggedGroup MODEL_TAGS = new TaggedGroup( "chain:artifact" )
+      .union( "200", "302", "artifact" );
 
   /***
    * @param index provides the basis for our form retrieval
