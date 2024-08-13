@@ -40,7 +40,7 @@ public class ApiMessage {
         .set( HttpMsg.header( "x-github-api-version" ), "2022-11-28" )
         .masking( Unpredictables.RNG, m -> m
             .delete( Stream.of(
-                "connection", "host", "http2-settings", "upgrade", "user-agent" )
+                "connection", "content-length", "host", "http2-settings", "upgrade", "user-agent" )
                 .map( HttpMsg::header ) ) );
   }
 
