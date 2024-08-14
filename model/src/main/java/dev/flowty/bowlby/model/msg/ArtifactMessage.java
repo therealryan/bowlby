@@ -108,7 +108,7 @@ public class ArtifactMessage {
         .set( HttpReq.PATH, path )
         .masking( Unpredictables.BORING,
             m -> m.delete( Stream.of(
-                "host", "user-agent" )
+                "content-length", "host", "user-agent" )
                 .map( HttpMsg::header ) ) );
   }
 
