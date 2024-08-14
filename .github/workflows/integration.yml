@@ -25,9 +25,15 @@ jobs:
 
     - name: Save flow execution reports
       uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+      id: artifact-upload-step
       if: success() || failure()
       with:
         name: flow_execution_reports
         path: |
           test/target/mctf/e2e/latest
           test/target/mctf/github/latest
+
+    - name: Emit artifact links
+      run: |
+        echo " * [github isolation testing](http://132.226.129.14:56567/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/test/target/mctf/githublatest/index.html)" >> $GITHUB_STEP_SUMMARY
+        echo " * [integration testing](http://132.226.129.14:56567/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/test/target/mctf/e2e/latest/index.html)" >> $GITHUB_STEP_SUMMARY
