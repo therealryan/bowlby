@@ -52,7 +52,7 @@ public class ArtifactLink extends EagerModel {
             .motivation(
                 """
                     Submitting an artifact link via the form.\
-                     Bowbly will return a 302 redirect to the url at which the artifact can be browsed""" ) )
+                     Bowlby will return a 302 redirect to the url at which the artifact can be browsed""" ) )
         .prerequisite( get )
         .call( a -> a
             .from( Actors.USER )
