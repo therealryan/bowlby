@@ -13,7 +13,7 @@ You can browse the latest test results at
  * [github in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/github/latest/index.html)
  * [integrated system](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/e2e/latest/index.html)
 
-If you click through those you'll get sense of how it works _and_ confirmation that it does actually work.
+If you click through those you'll get sense of _how_ it works and confirmation that it _does_ work.
 
 ## Build
 
@@ -29,7 +29,7 @@ By default it'll come up on port `56567` - you should see console output to that
 
 ## Usage
 
-The bowlby root page has a form that accepts two types of links:
+Point a browser at the instance (e.g.: if you're running it locally then `http://localhost:56567`) and the root page will show a form that accepts two types of links:
  * Links to specific artifacts, such as you see at the bottom of the summary page of a workflow run (e.g.: `https://github.com/therealryan/bowlby/actions/runs/10391396242/artifacts/1812359413`)
    Bowlby will redirect you to a view of the files in that particular artifact.
    [This set of flows illustrates that operation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aartifact)
