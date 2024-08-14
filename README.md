@@ -40,6 +40,12 @@ Point a browser at the instance (e.g.: if you're running it locally then `http:/
    Bowlby will redirect you to a page with stable links that display the files of the most recent artifacts of that workflow on the repo's default branch.
    [This set of flows illustrates that operation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aworkflow)
 
+You can integrate your bowlby instance directly into your actions by:
+ 1. Giving your upload-artifact step an `id` ([for example](https://github.com/therealryan/bowlby/blob/main/.github/workflows/testing.yml#L30))
+ 1. Adding a step that uses the [artifact ID output of that step](https://github.com/actions/upload-artifact?tab=readme-ov-file#using-outputs) to emit a markdown link into the [job summary](https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/) ([for example](https://github.com/therealryan/bowlby/blob/main/.github/workflows/testing.yml#L38-L41)).
+
+This puts a link to the browsable artifact contents into the job summary, saving you the onerous burden of copy-and-paste.
+
 ## Configuration
 
 Bowlby is configured via environment variables with command-line argument overrides:
