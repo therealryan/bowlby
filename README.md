@@ -10,4 +10,8 @@ github actions artifact proxy
    
 We've got an instance running at http://132.226.129.14:56567/
 
-Browse the latest test results [here](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html).
+Browse the latest test results:
+ * [bowlby in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html)
+ * [browser in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/test/target/mctf/browser/latest/index.html)
+ * [github in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/github/latest/index.html)
+ * [integrated system](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/e2e/latest/index.html)
