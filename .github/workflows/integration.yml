@@ -19,6 +19,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
+      env:
+        BOWLBY_GH_AUTH_TOKEN: ${{ secrets.GH_API_AUTH_TOKEN }}
       run: mvn -B verify --file pom.xml -pl test -am -Dmctf.report.dir=latest
 
     - name: Save flow execution reports
