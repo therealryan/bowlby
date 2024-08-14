@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
 import com.mastercard.test.flow.assrt.Consequests;
@@ -87,7 +88,9 @@ class BrowserTest {
 
   private static WebDriver driver() {
     if( _driver == null ) {
-      _driver = new ChromeDriver();
+      ChromeOptions options = new ChromeOptions();
+      options.addArguments( "--headless=new" );
+      _driver = new ChromeDriver( options );
     }
     return _driver;
   }
