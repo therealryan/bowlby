@@ -20,6 +20,9 @@ If you click through those you'll get sense of _how_ it works and confirmation t
 It's a standard java/maven project. Check it out and run `mvn package`.
 This will produce an executable jar at `/app/target/bowlby` - copy that to wherever you want.
 
+If you don't have time for that nonsense then you can download the compiled jar from the artifacts on [this workflow](https://github.com/therealryan/bowlby/actions/workflows/package.yml).
+If your risk-tolerance extends to "save-as"-ing on strange links and executing the results, then [have at it](http://132.226.129.14:56567/latest/therealryan/bowlby/package.yml/bowlby/bowlby).
+
 ## Execution
 
 Run it with `java -jar bowlby`.
