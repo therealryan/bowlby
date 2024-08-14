@@ -2,7 +2,7 @@
 
 The [upload-artifact action](https://github.com/actions/upload-artifact) allows you to save files from an actions workflow - stuff like test results.
 Unfortunately it's [not yet possible](https://github.com/actions/upload-artifact/issues/14) to actually _look_ at those files without downloading a zip and manually extracting it.
-I am _very_ lazy, so that miniscule effort is entirely intolerable when I just want to see what the test failure was.
+I am _very_ lazy, so that miniscule effort is entirely intolerable when I just want to see what the test failure is.
 
 Enter **bowlby**, an application that does the tedious downloading and unzipping bits and lets you freely browse the contents of the artifacts.
 
