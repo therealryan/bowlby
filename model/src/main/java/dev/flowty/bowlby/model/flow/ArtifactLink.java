@@ -83,7 +83,7 @@ public class ArtifactLink extends EagerModel {
                 .set( "lists",
                     """
                         [file.txt](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/file.txt)
-                        [subdir/](http://[::]:_masked_/artifacts/therealryan/bowlby/_masked_/subdir/)""" )
+                        [subdir/](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/)""" )
                 .set( "url", "http://[::]:56567/artifacts/therealryan/bowlby/1798279626/" ) ) ),
         chain );
 
@@ -105,7 +105,7 @@ public class ArtifactLink extends EagerModel {
                 .set( "lists",
                     """
                         [../](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/)
-                        [subfile.txt](http://[::]:_masked_/artifacts/therealryan/bowlby/_masked_/subdir/subfile.txt)""" )
+                        [subfile.txt](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/subfile.txt)""" )
                 .set( "url",
                     "http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/" ) ) ),
         chain );
