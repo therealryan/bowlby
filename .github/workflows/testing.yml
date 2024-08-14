@@ -30,4 +30,6 @@ jobs:
       if: success() || failure()
       with:
         name: flow_execution_reports
-        path: '**/target/mctf/latest'
+        path: |
+          app/target/mctf/latest
+          test/target/mctf/browser/latest
