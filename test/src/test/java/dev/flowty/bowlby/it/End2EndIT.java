@@ -64,7 +64,7 @@ class EndToEndIT {
         .behaviour( asrt -> {
           WebSequence request = (WebSequence) asrt.expected().request().child();
           if( request.get( "bowlby_url" ) != null ) {
-            request.set( "bowlby_url", "http:/" + app.address() );
+            request.set( "bowlby_url", app.uri().toString() );
           }
 
           WebDriver driver = driver();

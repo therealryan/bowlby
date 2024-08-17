@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -45,7 +44,6 @@ import dev.flowty.bowlby.test.TestLog;
 class MainTest {
 
   private static Main app;
-  private static URI target;
   private static final Consequests consequests = new Consequests();
   private static final MockHost artifacts = new MockHost( Actors.ARTIFACTS, consequests );
   private static final MockHost github = new MockHost( Actors.GITHUB, consequests,
@@ -85,7 +83,6 @@ class MainTest {
         "-g", "http:/" + github.address(),
         "-t", "_auth_token_" ) );
     app.start();
-    target = new URI( "http:/" + app.address() );
   }
 
   /**
@@ -105,7 +102,7 @@ class MainTest {
             github.seedResponses( asrt );
 
             HttpResponse<String> response = HTTP.send(
-                HttpFlow.sendable( target, request ),
+                HttpFlow.sendable( app.uri(), request ),
                 BodyHandlers.ofString() );
 
             asrt.actual()

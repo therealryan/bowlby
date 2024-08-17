@@ -150,6 +150,9 @@ class LatestArtifactHandler implements HttpHandler {
     }
     else {
       Branch defaultBranch = client.getDefaultBranch( workflow.repo() );
+      if( defaultBranch == null ) {
+        return null;
+      }
       Run latest = client.getLatestRun( workflow, defaultBranch );
       if( latest == null ) {
         return null;

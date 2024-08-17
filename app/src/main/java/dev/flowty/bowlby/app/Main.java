@@ -1,11 +1,14 @@
 package dev.flowty.bowlby.app;
 
-import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.function.Consumer;
 
 import dev.flowty.bowlby.app.cfg.Parameters;
 import dev.flowty.bowlby.app.github.Artifacts;
 import dev.flowty.bowlby.app.github.GithubApiClient;
 import dev.flowty.bowlby.app.srv.Server;
+import dev.flowty.bowlby.app.ui.Gui;
 
 /**
  * Application entrypoint
@@ -29,6 +32,7 @@ public class Main {
   }
 
   private final Server server;
+  private final Gui gui;
 
   /**
    * @param parameters Configuration object
@@ -47,6 +51,7 @@ public class Main {
         ghClient,
         artifacts,
         parameters.latestArtifactCacheDuration() );
+    gui = new Gui( this, parameters.iconBehaviour() );
   }
 
   /**
@@ -54,13 +59,28 @@ public class Main {
    */
   public void start() {
     server.start();
+    gui.start();
   }
 
   /**
    * @return The address that the server is listening on
    */
-  public InetSocketAddress address() {
-    return server.address();
+  public URI uri() {
+    try {
+      return new URI( "http:/" + server.address() );
+    }
+    catch( URISyntaxException e ) {
+      throw new IllegalStateException( "Bad address", e );
+    }
+  }
+
+  /**
+   * Adds an activity listener
+   *
+   * @param listener the object to be appraised of request-handling activity
+   */
+  public void withListener( Consumer<Boolean> listener ) {
+    server.withListener( listener );
   }
 
   /**
@@ -68,5 +88,6 @@ public class Main {
    */
   public void stop() {
     server.stop();
+    gui.stop();
   }
 }

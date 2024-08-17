@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flowty.bowlby.app.github.Entity.Repository;
+import dev.flowty.bowlby.app.ui.Gui.IconBehaviour;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -78,6 +79,15 @@ public class Parameters {
   private String artifactValidity = Optional
       .ofNullable( System.getenv( "BOWLBY_ARTIFACT_VALIDITY" ) )
       .orElse( "P3D" );
+
+  @Option(names = { "-i", "--icon" },
+      description = """
+          Controls the system tray icon. Choose from NONE, STATIC or DYNAMIC.
+          The dynamic icon will give a visible indication of request-handling activity
+          Overrides environment variable 'BOWLBY_ICON'""")
+  private String iconBehaviour = Optional
+      .ofNullable( System.getenv( "BOWLBY_ICON" ) )
+      .orElse( "DYNAMIC" );
 
   private static final Pattern REPO_RGX = Pattern.compile( "(\\w+)/(\\w+)" );
   private final Set<Repository> repos;
@@ -158,5 +168,12 @@ public class Parameters {
    */
   public Duration artifactCacheDuration() {
     return Duration.parse( artifactValidity );
+  }
+
+  /**
+   * @return The desired icon behaviour
+   */
+  public IconBehaviour iconBehaviour() {
+    return IconBehaviour.from( iconBehaviour );
   }
 }

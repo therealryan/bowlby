@@ -106,7 +106,7 @@ public class GithubApiClient {
 
       Optional<String> dlUri = redirect.headers().firstValue( "location" );
       if( redirect.statusCode() != 302 && dlUri.isEmpty() ) {
-        LOG.warn( "Failed to get download URL {}/{}",
+        LOG.error( "Failed to get download URL {}/{}",
             redirect.statusCode(), redirect.body() );
       }
       else {
@@ -156,6 +156,13 @@ public class GithubApiClient {
           .build(),
           ListWorkflowRunResponse.HANDLER );
 
+      if( response.statusCode() != 200 ) {
+        LOG.error( "Unexpected response status {}. Run with {} to see the full response.",
+            response.statusCode(),
+            "-Dorg.slf4j.simpleLogger.defaultLogLevel=trace" );
+        return null;
+      }
+
       return Optional.ofNullable( response )
           .map( HttpResponse::body )
           .map( b -> b.runs )
@@ -190,6 +197,13 @@ public class GithubApiClient {
           .header( "X-GitHub-Api-Version", API_VERSION )
           .build(),
           ListWorkflowRunArtifactsResponse.HANDLER );
+
+      if( response.statusCode() != 200 ) {
+        LOG.error( "Unexpected response status {}. Run with {} to see the full response.",
+            response.statusCode(),
+            "-Dorg.slf4j.simpleLogger.defaultLogLevel=trace" );
+        return null;
+      }
 
       return Optional.ofNullable( response )
           .map( HttpResponse::body )
@@ -227,6 +241,13 @@ public class GithubApiClient {
           .header( "X-GitHub-Api-Version", API_VERSION )
           .build(),
           GetRepoResponse.HANDLER );
+
+      if( response.statusCode() != 200 ) {
+        LOG.error( "Unexpected response status {}. Run with {} to see the full response.",
+            response.statusCode(),
+            "-Dorg.slf4j.simpleLogger.defaultLogLevel=trace" );
+        return null;
+      }
 
       return new Branch( repo, response.body().defaultBranch );
     }

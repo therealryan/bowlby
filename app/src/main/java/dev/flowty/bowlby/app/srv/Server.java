@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 
@@ -21,6 +22,7 @@ import dev.flowty.bowlby.app.github.GithubApiClient;
 public class Server {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger( Server.class );
   private final HttpServer server;
+  private final ServerListeners listeners = new ServerListeners();
 
   /**
    * Creates a new server
@@ -38,12 +40,14 @@ public class Server {
     try {
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
       server.setExecutor( Executors.newCachedThreadPool() );
-      server.createContext( "/favicon.ico", new ResourceHandler(
-          "/favicon.ico", "image/vnd.microsoft.icon" ) );
-      server.createContext( "/artifacts", new ArtifactHandler( repos, artifacts ) );
-      server.createContext( "/latest",
-          new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) );
-      server.createContext( "/", new LinkHandler() );
+      server.createContext( "/favicon.ico", listeners.wrap(
+          new ResourceHandler( "/favicon.ico", "image/vnd.microsoft.icon" ) ) );
+      server.createContext( "/artifacts", listeners.wrap(
+          new ArtifactHandler( repos, artifacts ) ) );
+      server.createContext( "/latest", listeners.wrap(
+          new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) ) );
+      server.createContext( "/", listeners.wrap(
+          new LinkHandler() ) );
     }
     catch( IOException ioe ) {
       throw new UncheckedIOException( "Failed to create server", ioe );
@@ -56,6 +60,15 @@ public class Server {
   public void start() {
     server.start();
     LOG.info( "started at http:/{}", server.getAddress() );
+  }
+
+  /**
+   * Adds an activity listener
+   *
+   * @param listener the object to be appraised of request-handling activity
+   */
+  public void withListener( Consumer<Boolean> listener ) {
+    listeners.with( listener );
   }
 
   /**
