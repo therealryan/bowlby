@@ -52,8 +52,8 @@ Bowlby is configured via environment variables with command-line argument overri
 
 ```
 Usage: bowlby [-h] [-a=<artifactValidity>] [-d=<cacheDir>] [-g=<githubApiHost>]
-              [-l=<latestValidity>] [-p=<port>] [-r=<repositories>]
-              [-t=<authToken>]
+              [-i=<iconBehaviour>] [-l=<latestValidity>] [-p=<port>]
+              [-r=<repositories>] [-t=<authToken>]
 A browsable proxy for github action artifacts
   -a, --artifactValidity=<artifactValidity>
                             An ISO-8601 duration string, controlling how long
@@ -72,6 +72,12 @@ A browsable proxy for github action artifacts
                             Defaults to 'https://api.github.com'
                             Overrides environment variable 'BOWLBY_GH_HOST'
   -h, --help                Prints help and exits
+  -i, --icon=<iconBehaviour>
+                            Controls the system tray icon. Choose from NONE,
+                              STATIC or DYNAMIC.
+                            The dynamic icon will give a visible indication of
+                              request-handling activity
+                            Overrides environment variable 'BOWLBY_ICON'
   -l, --latestValidity=<latestValidity>
                             An ISO-8601 duration string, controlling how long
                               the latest artifact results are cached for.
@@ -94,6 +100,7 @@ A browsable proxy for github action artifacts
                               requests.
                             Overrides environment variable
                               'BOWLBY_GH_AUTH_TOKEN'
+
 ```
 
 Note that:
