@@ -35,5 +35,5 @@ jobs:
 
     - name: Emit artifact links
       run: |
-        echo " * [github isolation testing](http://132.226.129.14:56567/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/github/latest/index.html)" >> $GITHUB_STEP_SUMMARY
-        echo " * [integration testing](http://132.226.129.14:56567/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/e2e/latest/index.html)" >> $GITHUB_STEP_SUMMARY
+        echo " * [github isolation testing](https://bowlby.flowty.dev/self/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/github/latest/index.html)" >> $GITHUB_STEP_SUMMARY
+        echo " * [integration testing](https://bowlby.flowty.dev/self/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/e2e/latest/index.html)" >> $GITHUB_STEP_SUMMARY
