@@ -21,7 +21,7 @@ jobs:
           retry-delay: 500
 
       - name: Fail on non-200
-        if: ${{ steps.request.outputs.status }} != 1000
+        if: ${{ steps.request.outputs.status }} != 200
         run: |
           echo "::error file={name},line={line},endLine={endLine},title={title}::{message}"
           exit 1
