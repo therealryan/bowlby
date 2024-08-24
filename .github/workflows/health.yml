@@ -15,7 +15,7 @@ jobs:
         id: request
         uses: tyrrrz/action-http-request@master
         with:
-          url: https://example.com
+          url: https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml
           method: GET
           retry-count: 3
           retry-delay: 500
