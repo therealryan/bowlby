@@ -1,0 +1,27 @@
+# This workflow hits an endpoint of our bowlby instance and fails if we don't get a success response
+
+name: health
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP request
+        id: request
+        uses: tyrrrz/action-http-request@master
+        with:
+          url: https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html
+          method: GET
+          retry-count: 3
+          retry-delay: 500
+
+      - name: Fail on non-200
+        if: ${{ steps.request.outputs.status }} != 1000
+        run: |
+          echo "::error file={name},line={line},endLine={endLine},title={title}::{message}"
+          exit 1
