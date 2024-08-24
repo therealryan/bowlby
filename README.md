@@ -6,12 +6,12 @@ I am _very_ lazy, so that miniscule effort is entirely intolerable when I just w
 
 Enter **bowlby**, an application that does the tedious downloading and unzipping bits and lets you freely browse the contents of the artifacts.
 
-We've got an instance running at http://132.226.129.14:56567/ that allows access to the artifacts in this project.
+We've got an instance running at https://bowlby.flowty.dev/self/ that allows access to the artifacts in this project.
 You can browse the latest test results at
- * [bowlby in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html)
- * [browser in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/test/target/mctf/browser/latest/index.html)
- * [github in isolation](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/github/latest/index.html)
- * [integrated system](http://132.226.129.14:56567/latest/therealryan/bowlby/integration.yml/flow_execution_reports/e2e/latest/index.html)
+ * [bowlby in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html)
+ * [browser in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/test/target/mctf/browser/latest/index.html)
+ * [github in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/integration.yml/flow_execution_reports/github/latest/index.html)
+ * [integrated system](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/integration.yml/flow_execution_reports/e2e/latest/index.html)
 
 If you click through those you'll get sense of _how_ it works and confirmation that it _does_ work.
 
@@ -21,7 +21,7 @@ It's a standard java/maven project. Check it out and run `mvn package`.
 This will produce an executable jar at `/app/target/bowlby` - copy that to wherever you want.
 
 If you don't have time for that nonsense then you can download the compiled jar from the artifacts on [this workflow](https://github.com/therealryan/bowlby/actions/workflows/package.yml).
-If your risk-tolerance extends to "save-as"-ing on strange links and executing the results, then [have at it](http://132.226.129.14:56567/latest/therealryan/bowlby/package.yml/bowlby/bowlby).
+If your risk-tolerance extends to "save-as"-ing on strange links and executing the results, then [have at it](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/package.yml/bowlby/bowlby).
 
 ## Execution
 
@@ -35,10 +35,10 @@ By default it'll come up on port `56567` - you should see console output to that
 Point a browser at the instance (e.g.: if you're running it locally then `http://localhost:56567`) and the root page will show a form that accepts two types of links:
  * Links to specific artifacts, such as you see at the bottom of the summary page of a workflow run (e.g.: `https://github.com/therealryan/bowlby/actions/runs/10391396242/artifacts/1812359413`)
    Bowlby will redirect you to a view of the files in that particular artifact.
-   [This set of flows illustrates that operation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aartifact)
+   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aartifact)
  * Links to workflows, such as you'd find on the "Actions" tab (e.g.: `https://github.com/therealryan/bowlby/actions/workflows/testing.yml`)
    Bowlby will redirect you to a page with stable links that display the files of the most recent artifacts of that workflow on the repo's default branch.
-   [This set of flows illustrates that operation](http://132.226.129.14:56567/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aworkflow)
+   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aworkflow)
 
 You can integrate your bowlby instance directly into your actions by:
  1. Giving your upload-artifact step an `id` ([for example](https://github.com/therealryan/bowlby/blob/main/.github/workflows/testing.yml#L30))
@@ -51,9 +51,9 @@ This puts a link to the browsable artifact contents into the job summary, saving
 Bowlby is configured via environment variables with command-line argument overrides:
 
 ```
-Usage: bowlby [-h] [-a=<artifactValidity>] [-d=<cacheDir>] [-g=<githubApiHost>]
-              [-i=<iconBehaviour>] [-l=<latestValidity>] [-p=<port>]
-              [-r=<repositories>] [-t=<authToken>]
+Usage: bowlby [-h] [-a=<artifactValidity>] [-c=<contextPath>] [-d=<cacheDir>]
+              [-g=<githubApiHost>] [-i=<iconBehaviour>] [-l=<latestValidity>]
+              [-p=<port>] [-r=<repositories>] [-t=<authToken>]
 A browsable proxy for github action artifacts
   -a, --artifactValidity=<artifactValidity>
                             An ISO-8601 duration string, controlling how long
@@ -63,6 +63,16 @@ A browsable proxy for github action artifacts
                               most recent access.
                             Overrides environment variable
                               'BOWLBY_ARTIFACT_VALIDITY'
+  -c, --context=<contextPath>
+                            Controls the path at which bowlby assumes it is
+                              being served.
+                            If you're accessing bowlbly directly then you can
+                              leave this blank (the default), but if you're
+                              proxying requests to your webserver at
+                              `/some/path` to hit your bowlby instance then
+                              you'll want to set this to `/some/path` so that
+                              bowlby can issue redirect responses correctly.
+                            Overrides environment variable 'BOWLBY_CONTEXT_PATH'
   -d, --dir=<cacheDir>      The directory in which to cache artifacts.
                             Defaults to 'bowlby' under the system's temp
                               directory.
@@ -100,7 +110,6 @@ A browsable proxy for github action artifacts
                               requests.
                             Overrides environment variable
                               'BOWLBY_GH_AUTH_TOKEN'
-
 ```
 
 Note that:

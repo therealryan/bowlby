@@ -80,14 +80,22 @@ public class Parameters {
       .ofNullable( System.getenv( "BOWLBY_ARTIFACT_VALIDITY" ) )
       .orElse( "P3D" );
 
-  @Option(names = { "-i", "--icon" },
-      description = """
-          Controls the system tray icon. Choose from NONE, STATIC or DYNAMIC.
-          The dynamic icon will give a visible indication of request-handling activity
-          Overrides environment variable 'BOWLBY_ICON'""")
+  @Option(names = { "-i", "--icon" }, description = """
+      Controls the system tray icon. Choose from NONE, STATIC or DYNAMIC.
+      The dynamic icon will give a visible indication of request-handling activity
+      Overrides environment variable 'BOWLBY_ICON'""")
   private String iconBehaviour = Optional
       .ofNullable( System.getenv( "BOWLBY_ICON" ) )
       .orElse( "DYNAMIC" );
+
+  @Option(names = { "-c", "--context" },
+      description = """
+          Controls the path at which bowlby assumes it is being served.
+          If you're accessing bowlbly directly then you can leave this blank (the default), but if you're proxying requests to your webserver at `/some/path` to hit your bowlby instance then you'll want to set this to `/some/path` so that bowlby can issue redirect responses correctly.
+          Overrides environment variable 'BOWLBY_CONTEXT_PATH'""")
+  private String contextPath = Optional
+      .ofNullable( System.getenv( "BOWLBY_CONTEXT_PATH" ) )
+      .orElse( "" );
 
   private static final Pattern REPO_RGX = Pattern.compile( "(\\w+)/(\\w+)" );
   private final Set<Repository> repos;
@@ -175,5 +183,12 @@ public class Parameters {
    */
   public IconBehaviour iconBehaviour() {
     return IconBehaviour.from( iconBehaviour );
+  }
+
+  /**
+   * @return The root path of the bowlby instance
+   */
+  public String contextPath() {
+    return contextPath;
   }
 }

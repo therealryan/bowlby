@@ -17,14 +17,16 @@ class ResourceHandler implements HttpHandler {
 
   private final String name;
   private final String contentType;
+  private ServeUtil serveUtil;
 
   /**
    * @param name        The resource name
    * @param contentType The content type to set in responses
    */
-  public ResourceHandler( String name, String contentType ) {
+  public ResourceHandler( String name, String contentType, ServeUtil serveUtil ) {
     this.name = name;
     this.contentType = contentType;
+    this.serveUtil = serveUtil;
   }
 
   @Override
@@ -33,7 +35,7 @@ class ResourceHandler implements HttpHandler {
       LOG.debug( "{}", exchange.getRequestURI() );
 
       if( !"GET".equalsIgnoreCase( exchange.getRequestMethod() ) ) {
-        ServeUtil.showLinkForm( exchange, 501, "Only GET supported" );
+        serveUtil.showLinkForm( exchange, 501, "Only GET supported" );
         return;
       }
       URLConnection urlc = Server.class.getResource( name ).openConnection();
@@ -46,7 +48,7 @@ class ResourceHandler implements HttpHandler {
     }
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );
-      ServeUtil.showLinkForm( exchange, 500, "Unexpected failure" );
+      serveUtil.showLinkForm( exchange, 500, "Unexpected failure" );
     }
   }
 }

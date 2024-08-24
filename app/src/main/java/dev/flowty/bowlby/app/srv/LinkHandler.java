@@ -25,12 +25,21 @@ class LinkHandler implements HttpHandler {
   private static final Pattern GITHUB_WORKFLOW_LINK = Pattern.compile(
       "https://github.com/([^/]+)/([^/]+)/actions/workflows/([^?]+)" );
 
+  private final ServeUtil serveUtil;
+
+  /**
+   * @param serveUtil context-aware utility functions
+   */
+  LinkHandler( ServeUtil serveUtil ) {
+    this.serveUtil = serveUtil;
+  }
+
   @Override
   public void handle( HttpExchange exchange ) throws IOException {
     try {
       LOG.debug( "{}", exchange.getRequestURI() );
       if( !"GET".equalsIgnoreCase( exchange.getRequestMethod() ) ) {
-        ServeUtil.showLinkForm( exchange, 501, "Only GET supported" );
+        serveUtil.showLinkForm( exchange, 501, "Only GET supported" );
         return;
       }
 
@@ -46,7 +55,7 @@ class LinkHandler implements HttpHandler {
         {
           Matcher artifactMatch = GITHUB_ARTIFACT_LINK.matcher( link );
           if( artifactMatch.find() ) {
-            ServeUtil.redirect( exchange, String.format(
+            serveUtil.redirect( exchange, String.format(
                 "/artifacts/%s/%s/%s/",
                 artifactMatch.group( 1 ), artifactMatch.group( 2 ), artifactMatch.group( 3 ) ) );
             return;
@@ -55,17 +64,17 @@ class LinkHandler implements HttpHandler {
         {
           Matcher workFlowMatch = GITHUB_WORKFLOW_LINK.matcher( link );
           if( workFlowMatch.find() ) {
-            ServeUtil.redirect( exchange, String.format(
+            serveUtil.redirect( exchange, String.format(
                 "/latest/%s/%s/%s",
                 workFlowMatch.group( 1 ), workFlowMatch.group( 2 ), workFlowMatch.group( 3 ) ) );
             return;
           }
         }
-        ServeUtil.showLinkForm( exchange, 200, "Failed to grok " + link );
+        serveUtil.showLinkForm( exchange, 200, "Failed to grok " + link );
         return;
       }
 
-      ServeUtil.showLinkForm( exchange,
+      serveUtil.showLinkForm( exchange,
           "/".equals( exchange.getRequestURI().getPath() )
               ? 200
               : 404,
@@ -73,7 +82,7 @@ class LinkHandler implements HttpHandler {
     }
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );
-      ServeUtil.showLinkForm( exchange, 500, "Unexpected failure" );
+      serveUtil.showLinkForm( exchange, 500, "Unexpected failure" );
     }
   }
 }

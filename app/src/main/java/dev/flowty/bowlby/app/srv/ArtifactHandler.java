@@ -43,14 +43,16 @@ class ArtifactHandler implements HttpHandler {
    */
   private final Artifacts artifacts;
 
+  private final ServeUtil serveUtil;
+
   /**
    * @param repos     The set of repos that we allow ourselves to serve from
    * @param artifacts The source of the content we serve
    */
-  public ArtifactHandler( Set<Repository> repos, Artifacts artifacts ) {
-
+  public ArtifactHandler( Set<Repository> repos, Artifacts artifacts, ServeUtil serveUtil ) {
     this.repos = repos;
     this.artifacts = artifacts;
+    this.serveUtil = serveUtil;
   }
 
   @Override
@@ -59,7 +61,7 @@ class ArtifactHandler implements HttpHandler {
       LOG.debug( "{}", exchange.getRequestURI() );
 
       if( !"GET".equalsIgnoreCase( exchange.getRequestMethod() ) ) {
-        ServeUtil.showLinkForm( exchange, 501, "Only GET supported" );
+        serveUtil.showLinkForm( exchange, 501, "Only GET supported" );
         return;
       }
       Deque<String> path = Stream.of( exchange.getRequestURI().getPath().split( "/" ) )
@@ -67,11 +69,11 @@ class ArtifactHandler implements HttpHandler {
           .collect( toCollection( ArrayDeque::new ) );
 
       if( path.size() < 4 ) {
-        ServeUtil.showLinkForm( exchange, 404, "insufficient path" );
+        serveUtil.showLinkForm( exchange, 404, "insufficient path" );
         return;
       }
       if( !"artifacts".equals( path.poll() ) ) {
-        ServeUtil.showLinkForm( exchange, 500, "unexpected root" );
+        serveUtil.showLinkForm( exchange, 500, "unexpected root" );
         return;
       }
 
@@ -79,7 +81,7 @@ class ArtifactHandler implements HttpHandler {
 
       if( !repos.isEmpty() && !repos.contains( repo ) ) {
         // we're limited to particular repos, and that isn't one of them
-        ServeUtil.showLinkForm( exchange, 403, "forbidden repository addressed" );
+        serveUtil.showLinkForm( exchange, 403, "forbidden repository addressed" );
         return;
       }
 
@@ -87,7 +89,7 @@ class ArtifactHandler implements HttpHandler {
     }
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );
-      ServeUtil.showLinkForm( exchange, 500, "Unexpected failure" );
+      serveUtil.showLinkForm( exchange, 500, "Unexpected failure" );
     }
   }
 
@@ -97,7 +99,7 @@ class ArtifactHandler implements HttpHandler {
     Artifact artifact = new Artifact( repo, path.poll() );
     Path zip = artifacts.get( artifact );
     if( zip == null ) {
-      ServeUtil.showLinkForm( exchange, 404, "No such artifact" );
+      serveUtil.showLinkForm( exchange, 404, "No such artifact" );
       return;
     }
 
@@ -114,7 +116,7 @@ class ArtifactHandler implements HttpHandler {
         listDirectory( exchange, internal );
       }
       else if( !Files.exists( internal ) ) {
-        ServeUtil.showLinkForm( exchange, 404, "No such file!" );
+        serveUtil.showLinkForm( exchange, 404, "No such file!" );
       }
       else {
         throw new IllegalStateException( "Unexpected file state! " + zip + "/" + internal );
@@ -140,7 +142,7 @@ class ArtifactHandler implements HttpHandler {
     }
   }
 
-  private static void listDirectory( HttpExchange exchange, Path directory ) throws IOException {
+  private void listDirectory( HttpExchange exchange, Path directory ) throws IOException {
     if( exchange.getRequestURI().getPath().endsWith( "/" ) ) {
       // list dir
       ServeUtil.respond( exchange, 200, dirIndex( directory ) );
@@ -148,11 +150,11 @@ class ArtifactHandler implements HttpHandler {
     else {
       // no trailing '/': redirect to the explicit dir list. Relative link behaviour
       // breaks down if we don't have the trailing '/'
-      ServeUtil.redirect( exchange, exchange.getRequestURI().getPath() + "/" );
+      serveUtil.redirect( exchange, exchange.getRequestURI().getPath() + "/" );
     }
   }
 
-  private static String dirIndex( Path dir ) throws IOException {
+  private String dirIndex( Path dir ) throws IOException {
     Set<Path> all = new TreeSet<>();
     try( Stream<Path> list = Files.list( dir ) ) {
       list.forEach( all::add );
@@ -169,7 +171,7 @@ class ArtifactHandler implements HttpHandler {
             .title( "bowlby" ) )
         .body( b -> b
             .h1( h -> h
-                .a( "/", "bowlby" ) )
+                .a( serveUtil.contextPath() + "/", "bowlby" ) )
             .ul( l -> l
                 // link to the parent dir if we're not already at the root
                 .conditional( c -> c.li( i -> i.a( "../", "../" ) ) ).on( dir.getNameCount() > 0 )

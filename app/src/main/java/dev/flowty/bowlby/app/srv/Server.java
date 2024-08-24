@@ -36,18 +36,19 @@ public class Server {
    */
   @SuppressWarnings("resource")
   public Server( int port, Set<Repository> repos, GithubApiClient ghClient, Artifacts artifacts,
-      Duration latestArtifactCacheDuration ) {
+      Duration latestArtifactCacheDuration, String contextPath ) {
     try {
+      ServeUtil serveUtil = new ServeUtil( contextPath );
       server = HttpServer.create( new InetSocketAddress( port ), 0 );
       server.setExecutor( Executors.newCachedThreadPool() );
       server.createContext( "/favicon.ico", listeners.wrap(
-          new ResourceHandler( "/favicon.ico", "image/vnd.microsoft.icon" ) ) );
+          new ResourceHandler( "/favicon.ico", "image/vnd.microsoft.icon", serveUtil ) ) );
       server.createContext( "/artifacts", listeners.wrap(
-          new ArtifactHandler( repos, artifacts ) ) );
+          new ArtifactHandler( repos, artifacts, serveUtil ) ) );
       server.createContext( "/latest", listeners.wrap(
-          new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration ) ) );
+          new LatestArtifactHandler( repos, ghClient, latestArtifactCacheDuration, serveUtil ) ) );
       server.createContext( "/", listeners.wrap(
-          new LinkHandler() ) );
+          new LinkHandler( serveUtil ) ) );
     }
     catch( IOException ioe ) {
       throw new UncheckedIOException( "Failed to create server", ioe );

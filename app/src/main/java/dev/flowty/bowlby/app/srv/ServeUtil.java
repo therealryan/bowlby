@@ -28,8 +28,20 @@ import dev.flowty.bowlby.app.xml.Html;
 class ServeUtil {
   private static final Logger LOG = LoggerFactory.getLogger( ServeUtil.class );
 
-  private ServeUtil() {
-    // no instance
+  private final String contextPath;
+
+  /**
+   * @param contextPath the root path of the bowlby instance
+   */
+  public ServeUtil( String contextPath ) {
+    this.contextPath = contextPath;
+  }
+
+  /**
+   * @return The root path of the bowlby instance
+   */
+  public String contextPath() {
+    return contextPath;
   }
 
   /**
@@ -104,10 +116,10 @@ class ServeUtil {
    * @param destination The redirect destination
    * @throws IOException on failure
    */
-  public static void redirect( HttpExchange exchange, String destination ) throws IOException {
-    LOG.debug( "redirecting to {}", destination );
+  public void redirect( HttpExchange exchange, String destination ) throws IOException {
+    LOG.debug( "redirecting to {}{}", contextPath, destination );
     exchange.getResponseHeaders()
-        .add( "location", destination );
+        .add( "location", contextPath + destination );
     exchange.sendResponseHeaders( 303, -1 );
   }
 
@@ -151,11 +163,11 @@ class ServeUtil {
    * @param message  The error message, or <code>null</code>
    * @throws IOException on failure
    */
-  public static void showLinkForm( HttpExchange exchange, int status, String message )
+  public void showLinkForm( HttpExchange exchange, int status, String message )
       throws IOException {
     String destination = "/".equals( exchange.getRequestURI().getPath() )
         ? "https://github.com/therealryan/bowlby"
-        : "/";
+        : contextPath + "/";
     Html page = new Html()
         .head( h -> h
             .title( "bowlby" ) )
@@ -163,7 +175,7 @@ class ServeUtil {
             .h1( h -> h
                 .a( destination, "bowlby" ) )
             .form( f -> f
-                .atr( "action", "/" )
+                .atr( "action", contextPath + "/" )
                 .input( i -> i
                     .atr( "type", "text" )
                     .atr( "id", "link_input" )

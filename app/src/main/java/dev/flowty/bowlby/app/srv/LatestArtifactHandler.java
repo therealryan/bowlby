@@ -44,6 +44,7 @@ class LatestArtifactHandler implements HttpHandler {
   private final Set<Repository> repos;
   private final GithubApiClient client;
   private final Duration cacheValidity;
+  private final ServeUtil serveUtil;
 
   private record LatestArtifact(Set<NamedArtifact> artifacts, Instant expiry) {
   }
@@ -56,10 +57,11 @@ class LatestArtifactHandler implements HttpHandler {
    * @param cacheValidity How long latest artifact IDs will be cached for
    */
   public LatestArtifactHandler( Set<Repository> repos, GithubApiClient client,
-      Duration cacheValidity ) {
+      Duration cacheValidity, ServeUtil serveUtil ) {
     this.repos = repos;
     this.client = client;
     this.cacheValidity = cacheValidity;
+    this.serveUtil = serveUtil;
   }
 
   @Override
@@ -67,7 +69,7 @@ class LatestArtifactHandler implements HttpHandler {
     try {
       LOG.debug( "{}", exchange.getRequestURI() );
       if( !"GET".equalsIgnoreCase( exchange.getRequestMethod() ) ) {
-        ServeUtil.showLinkForm( exchange, 501, "Only GET supported" );
+        serveUtil.showLinkForm( exchange, 501, "Only GET supported" );
         return;
       }
 
@@ -76,23 +78,23 @@ class LatestArtifactHandler implements HttpHandler {
           .collect( toCollection( ArrayDeque::new ) );
 
       if( path.size() < 4 ) {
-        ServeUtil.showLinkForm( exchange, 404, "insufficient path" );
+        serveUtil.showLinkForm( exchange, 404, "insufficient path" );
         return;
       }
       if( !"latest".equals( path.poll() ) ) {
-        ServeUtil.showLinkForm( exchange, 500, "unexpected root" );
+        serveUtil.showLinkForm( exchange, 500, "unexpected root" );
       }
       Repository repo = new Repository( path.poll(), path.poll() );
       if( !repos.isEmpty() && !repos.contains( repo ) ) {
         // we're limited to particular repos, and that isn't one of them
-        ServeUtil.showLinkForm( exchange, 403, "forbidden repository addressed" );
+        serveUtil.showLinkForm( exchange, 403, "forbidden repository addressed" );
         return;
       }
       Workflow workflow = new Workflow( repo, path.poll() );
 
       LatestArtifact latest = getLatest( workflow );
       if( latest == null ) {
-        ServeUtil.showLinkForm( exchange, 502, "Failed to find latest artifacts of " + workflow );
+        serveUtil.showLinkForm( exchange, 502, "Failed to find latest artifacts of " + workflow );
         return;
       }
 
@@ -117,7 +119,7 @@ class LatestArtifactHandler implements HttpHandler {
       Duration cacheLife = Duration.between( Instant.now(), latest.expiry() );
       exchange.getResponseHeaders().add( "cache-control",
           "public; immutable; max-age=" + cacheLife.getSeconds() );
-      ServeUtil.redirect( exchange, String.format(
+      serveUtil.redirect( exchange, String.format(
           "/artifacts/%s/%s/%s/%s",
           workflow.repo().owner(), workflow.repo().repo(), selected.artifact().id(),
           // append the remaining path to the redirect so you can generate a stable link
@@ -126,7 +128,7 @@ class LatestArtifactHandler implements HttpHandler {
     }
     catch( Exception e ) {
       LOG.error( "request handling failure!", e );
-      ServeUtil.showLinkForm( exchange, 500, "Unexpected failure" );
+      serveUtil.showLinkForm( exchange, 500, "Unexpected failure" );
     }
   }
 
@@ -168,10 +170,11 @@ class LatestArtifactHandler implements HttpHandler {
     return cached;
   }
 
-  private static void showArtifactLinks( HttpExchange exchange, int status, Workflow workflow,
+  private void showArtifactLinks( HttpExchange exchange, int status, Workflow workflow,
       LatestArtifact latest ) throws IOException {
 
-    Function<NamedArtifact, String> artifactPath = na -> String.format( "/latest/%s/%s/%s/%s",
+    Function<NamedArtifact, String> artifactPath = na -> String.format( "%s/latest/%s/%s/%s/%s",
+        serveUtil.contextPath(),
         workflow.repo().owner(),
         workflow.repo().repo(),
         workflow.name(),
@@ -186,7 +189,7 @@ class LatestArtifactHandler implements HttpHandler {
             .title( "bowlby" ) )
         .body( b -> b
             .h1( h -> h
-                .a( "/", "bowlby" ) )
+                .a( serveUtil.contextPath() + "/", "bowlby" ) )
             .conditional( c -> c
                 .p( "No artifacts found for " + workflow.name() ) )
             .on( latest.artifacts().isEmpty() )

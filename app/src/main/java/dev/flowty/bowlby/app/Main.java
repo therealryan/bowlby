@@ -50,7 +50,8 @@ public class Main {
         parameters.repos(),
         ghClient,
         artifacts,
-        parameters.latestArtifactCacheDuration() );
+        parameters.latestArtifactCacheDuration(),
+        parameters.contextPath() );
     gui = new Gui( this, parameters.iconBehaviour() );
   }
 
