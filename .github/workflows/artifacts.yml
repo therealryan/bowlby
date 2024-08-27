@@ -17,12 +17,12 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Generate test artifact alpha
-      uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+      uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
       with:
         name: artifact_alpha
         path: 'model/src/main/resources/artifact_alpha'
     - name: Generate test artifact beta
-      uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+      uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
       with:
         name: artifact_beta
         path: 'model/src/main/resources/artifact_beta'
