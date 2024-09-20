@@ -86,9 +86,9 @@ public class WebMessage {
           params.put( "lists", summarise( driver, "ul" ) );
         } )
         .masking( Unpredictables.RNG, m -> m
-            .string( "url", s -> s.replaceAll( "\\d+", "_masked_" ) )
-            .string( "header", s -> s.replaceAll( "\\d+", "_masked_" ) )
-            .string( "lists", s -> s.replaceAll( "\\d+", "_masked_" ) )
+            .replace( "url", "_masked_" )
+            .string( "header", s -> s.replaceAll( "http://[^/]+/", "http://_masked_/" ) )
+            .string( "lists", s -> s.replaceAll( "http://[^/]+/", "http://_masked_/" ) )
             .string( "text", s -> s.replaceAll(
                 "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d+Z", "_masked_" ) ) );
   }

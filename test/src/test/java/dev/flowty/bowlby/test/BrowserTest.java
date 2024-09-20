@@ -55,7 +55,7 @@ class BrowserTest {
 
           WebSequence request = (WebSequence) asrt.expected().request().child();
           if( request.get( "bowlby_url" ) != null ) {
-            request.set( "bowlby_url", "http:/" + mock.address() );
+            request.set( "bowlby_url", "http://localhost:" + mock.port() );
           }
 
           WebDriver driver = driver();

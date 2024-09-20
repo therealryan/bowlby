@@ -167,6 +167,10 @@ public class MockHost {
     return server.getAddress();
   }
 
+  public int port() {
+    return address().getPort();
+  }
+
   /**
    * Stops the server
    */
