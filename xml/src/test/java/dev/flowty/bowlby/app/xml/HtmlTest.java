@@ -208,7 +208,8 @@ class HtmlTest {
       transformer.setOutputProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
       transformer.transform( xmlInput, xmlOutput );
       try( Writer w = xmlOutput.getWriter() ) {
-        return w.toString().trim();
+        return w.toString().trim()
+            .replaceAll( "\\r", "" );
       }
     }
     catch( TransformerException | IOException e ) {

@@ -37,7 +37,9 @@ public class HttpMessage {
         .masking( Unpredictables.BORING, m -> m
             .delete( Stream.of(
                 "accept", "accept-encoding", "accept-language", "connection", "host", "referer",
-                "upgrade-insecure-requests", "user-agent" )
+                "upgrade-insecure-requests", "user-agent",
+                "sec-ch-ua", "sec-ch-ua-mobile", "sec-ch-ua-platform", "sec-fetch-dest",
+                "sec-fetch-mode", "sec-fetch-site", "sec-fetch-user" )
                 .map( HttpMsg::header ) ) );
   }
 
