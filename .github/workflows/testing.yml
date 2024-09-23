@@ -36,6 +36,7 @@ jobs:
           test/target/mctf/browser/latest
 
     - name: Emit artifact links
+      if: success() || failure()
       run: |
         echo " * [bowlby isolation testing](https://bowlby.flowty.dev/self/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/app/target/mctf/latest/index.html)" >> $GITHUB_STEP_SUMMARY
         echo " * [browser isolation testing](https://bowlby.flowty.dev/self/artifacts/therealryan/bowlby/${{ steps.artifact-upload-step.outputs.artifact-id }}/test/target/mctf/browser/latest/index.html)" >> $GITHUB_STEP_SUMMARY
