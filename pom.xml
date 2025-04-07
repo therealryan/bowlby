@@ -67,7 +67,7 @@
         <!-- web browser automation -->
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-java</artifactId>
-        <version>4.30.0</version>
+        <version>4.31.0</version>
       </dependency>
 
       <dependency>
