@@ -2,6 +2,7 @@ services:
   bowlby:
     build:
       context: .
+    restart: unless-stopped
     volumes:
       - data:/data
     ports:
