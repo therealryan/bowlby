@@ -1,19 +1,19 @@
-FROM debian:12 as builder
+FROM debian:13 AS builder
 
 RUN apt-get update && \
-  apt-get install -y openjdk-17-jdk maven
+  apt-get install -y openjdk-25-jdk maven
 
 COPY . /app
 WORKDIR /app
 
 RUN mvn package
 
-FROM debian:12
+FROM debian:13
 RUN apt-get update && \
-  apt-get install -y openjdk-17-jre
+  apt-get install -y openjdk-25-jre
 
-run mkdir /app
+RUN mkdir /app
 COPY --from=builder /app/app/target/bowlby /app/bowlby
 
 VOLUME /data
-CMD /app/bowlby -d /data
+CMD ["/app/bowlby", "-d", "/data"]
