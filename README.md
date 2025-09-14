@@ -30,6 +30,12 @@ If you're running on linux then you can invoke it [directly](https://github.com/
 
 By default it'll come up on port `56567` - you should see console output to that effect.
 
+## As a container
+
+bowlby ships with a basic Dockerfile and docker-compose configuration. Clone this repository and copy `.env.defaults` to .env and add your GitHub token. Then, run `docker compose up -d` to start bowlby on port 56567.
+
+bolwby does not currently provide pre-built images. Pull requests are welcome to add them!
+
 ## Usage
 
 Point a browser at the instance (e.g.: if you're running it locally then `http://localhost:56567`) and the root page will show a form that accepts two types of links:
