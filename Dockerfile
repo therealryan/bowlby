@@ -1,16 +1,14 @@
-FROM debian:13 AS builder
+FROM alpine:latest AS builder
 
-RUN apt-get update && \
-  apt-get install -y openjdk-25-jdk-headless maven
+RUN apk add -u openjdk21-jdk maven
 
 COPY . /app
 WORKDIR /app
 
 RUN mvn package
 
-FROM debian:13
-RUN apt-get update && \
-  apt-get install -y openjdk-25-jre-headless
+FROM alpine:latest
+RUN apk add -u openjdk21-jre-headless
 
 RUN mkdir /app
 COPY --from=builder /app/app/target/bowlby /app/bowlby
