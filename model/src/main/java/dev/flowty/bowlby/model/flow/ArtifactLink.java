@@ -58,20 +58,23 @@ public class ArtifactLink extends EagerModel {
             .from( Actors.USER )
             .to( Actors.BROWSER )
             .request( WebMessage.submit(
-                "https://github.com/therealryan/bowlby/actions/runs/10334399684/artifacts/1798279626" ) )
+                "https://github.com/therealryan/bowlby/actions/runs/" + ArtifactRun.RUN_ID
+                    + "/artifacts/" + ArtifactRun.ARTIFACT_BETA_ID ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .tags( Tags.add( "submit" ) )
                 .request( HttpMessage.chromeRequest( "GET", ""
-                    + "/?link=https%3A%2F%2Fgithub.com%2Ftherealryan%2Fbowlby%2Factions%2Fruns%2F10334399684%2Fartifacts%2F1798279626" ) )
+                    + "/?link=https%3A%2F%2Fgithub.com%2Ftherealryan%2Fbowlby%2Factions%2Fruns%2F"
+                    + ArtifactRun.RUN_ID + "%2Fartifacts%2F" + ArtifactRun.ARTIFACT_BETA_ID ) )
                 .response( HttpMessage.redirectResponse(
-                    "/artifacts/therealryan/bowlby/1798279626/" ) ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID + "/" ) ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .tags( Tags.add( "download" ) )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1798279626/" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID + "/" ) )
                 .call( c -> c.to( Actors.GITHUB )
                     .request( ApiMessage.request(
-                        "/repos/therealryan/bowlby/actions/artifacts/1798279626/zip" ) )
+                        "/repos/therealryan/bowlby/actions/artifacts/"
+                            + ArtifactRun.ARTIFACT_BETA_ID + "/zip" ) )
                     .response( ApiMessage.artifactRedirect() ) )
                 .call( c -> c.to( Actors.ARTIFACTS )
                     .request( ArtifactMessage.get( "/a/very/long/url" ) )
@@ -80,11 +83,16 @@ public class ArtifactLink extends EagerModel {
             .response( WebMessage.summarise()
                 .set( "forms", "" )
                 .set( "header", "[bowlby](http://[::]:56567/)" )
-                .set( "lists",
-                    """
-                        [file.txt](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/file.txt)
-                        [subdir/](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/)""" )
-                .set( "url", "http://[::]:56567/artifacts/therealryan/bowlby/1798279626/" ) ) ),
+                .set( "lists", ""
+                    + "[file.txt](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_BETA_ID
+                    + "/file.txt)\n"
+                    + "[subdir/](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_BETA_ID
+                    + "/subdir/)" )
+                .set( "url",
+                    "http://[::]:56567/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID
+                        + "/" ) ) ),
         chain );
 
     Flow dir = Creator.build( flow -> flow.meta( data -> data
@@ -97,17 +105,20 @@ public class ArtifactLink extends EagerModel {
             .request( WebMessage.clickLink( "subdir/" ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1798279626/subdir/" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID + "/subdir/" ) )
                 .response( HttpMessage.directoryListing( "../", "subfile.txt" ) ) )
             .response( WebMessage.summarise()
                 .set( "forms", "" )
                 .set( "header", "[bowlby](http://[::]:56567/)" )
-                .set( "lists",
-                    """
-                        [../](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/)
-                        [subfile.txt](http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/subfile.txt)""" )
+                .set( "lists", ""
+                    + "[../](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_BETA_ID + "/)\n"
+                    + "[subfile.txt](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_BETA_ID
+                    + "/subdir/subfile.txt)" )
                 .set( "url",
-                    "http://[::]:56567/artifacts/therealryan/bowlby/1798279626/subdir/" ) ) ),
+                    "http://[::]:56567/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID
+                        + "/subdir/" ) ) ),
         chain );
 
     Flow file = Creator.build( flow -> flow.meta( data -> data
@@ -120,7 +131,8 @@ public class ArtifactLink extends EagerModel {
             .request( WebMessage.clickLink( "subfile.txt" ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1798279626/subdir/subfile.txt" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_BETA_ID
+                        + "/subdir/subfile.txt" ) )
                 .response( HttpMessage.textResponse(
                     "This is just a text file in a subdirectory!\n" ) ) )
             .response( WebMessage.text()

@@ -2,7 +2,8 @@
 
 A suite of integration tests that can exercise various subsets of the system components.
 
-The complete system looks like this:
+The module contains three tests:
+
 ```mermaid
 flowchart LR
   user --clicks--> browser
@@ -13,4 +14,48 @@ flowchart LR
   github --json--> bowlby
   bowlby --get--> artifacts
   artifacts --zips--> bowlby
+
+  subgraph BrowserTest
+  browser
+  end
+
+  subgraph ApiIT
+  github
+  artifacts
+  end
+
+  subgraph End2EndIT
+  browser
+  bowlby
+  github
+  artifacts
+  BrowserTest
+  ApiIT
+  end
 ```
+
+## `BrowserTest`
+
+```
+mvn test -pl test -am -Dtest=BrowserTest
+```
+
+Exercises the browser in isolation, confirming that it produces the HTTP requests that we
+expect in response to UI interactions.
+
+
+## `ApiIT`
+
+```
+BOWLBY_GH_AUTH_TOKEN=<api token value> mvn verify -pl test -am -Dit.test=ApiIT
+```
+
+Exercises the github API in isolation, confirming that it responds as we expect it to.
+
+## `End2EndIT`
+
+```
+BOWLBY_GH_AUTH_TOKEN=<api token value> mvn verify -pl test -am -Dit.test=End2EndIT
+```
+
+Stands up an instance of bowlby and exercises the complete system

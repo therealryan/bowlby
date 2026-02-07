@@ -88,17 +88,18 @@ public class LatestFromWorkflow extends EagerModel {
                     .request( ApiMessage.request(
                         "/repos/therealryan/bowlby/actions/workflows/artifacts.yml/runs?branch=main&status=completed&per_page=1" ) )
                     .response( ApiMessage.response(
-                        "workflow_runs[0].id", 10249960639L )
+                        "workflow_runs[0].id", ArtifactRun.RUN_ID )
                         .masking( Unpredictables.RNG,
                             m -> m.replace( "workflow_runs[0].id", "_masked_" ) ) ) )
                 .call( c -> c.to( Actors.GITHUB )
                     .tags( Tags.add( "artifacts" ) )
                     .request( ApiMessage.request(
-                        "/repos/therealryan/bowlby/actions/runs/10249960639/artifacts" ) )
+                        "/repos/therealryan/bowlby/actions/runs/" + ArtifactRun.RUN_ID
+                            + "/artifacts" ) )
                     .response( ApiMessage.response(
-                        "artifacts[0].id", 1776512962,
+                        "artifacts[0].id", ArtifactRun.ARTIFACT_ALPHA_ID,
                         "artifacts[0].name", "artifact_alpha",
-                        "artifacts[1].id", 1776513003,
+                        "artifacts[1].id", ArtifactRun.ARTIFACT_BETA_ID,
                         "artifacts[1].name", "artifact_beta" ) ) )
                 .response( HttpMessage.linkChoiceResponse( "artifact_alpha", "artifact_beta" ) ) )
             .response( WebMessage.summarise()
@@ -133,16 +134,17 @@ public class LatestFromWorkflow extends EagerModel {
                 .request( HttpMessage.chromeRequest( "GET",
                     "/latest/therealryan/bowlby/artifacts.yml/artifact_alpha" ) )
                 .response( HttpMessage.redirectResponse(
-                    "/artifacts/therealryan/bowlby/1776512962/" )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_ALPHA_ID + "/" )
                     .set( HttpMsg.header( "cache-control" ),
                         "public; immutable; max-age=599" ) ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .tags( Tags.add( "artifact" ) )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1776512962/" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_ALPHA_ID + "/" ) )
                 .call( c -> c.to( Actors.GITHUB )
                     .request( ApiMessage.request(
-                        "/repos/therealryan/bowlby/actions/artifacts/1776512962/zip" ) )
+                        "/repos/therealryan/bowlby/actions/artifacts/"
+                            + ArtifactRun.ARTIFACT_ALPHA_ID + "/zip" ) )
                     .response( ApiMessage.artifactRedirect() ) )
                 .call( c -> c.to( Actors.ARTIFACTS )
                     .request( ArtifactMessage.get( "/a/very/long/url" ) )
@@ -151,11 +153,14 @@ public class LatestFromWorkflow extends EagerModel {
             .response( WebMessage.summarise()
                 .set( "forms", "" )
                 .set( "header", "[bowlby](http://[::]:41289/)" )
-                .set( "lists",
-                    """
-                        [page.html](http://[::]:56567/artifacts/therealryan/bowlby/1776512962/page.html)
-                        [script.js](http://[::]:56567/artifacts/therealryan/bowlby/1776512962/script.js)""" )
-                .set( "url", "http://[::]:56567/artifacts/therealryan/bowlby/1776512962/" ) ) ),
+                .set( "lists", ""
+                    + "[page.html](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_ALPHA_ID + "/page.html)\n"
+                    + "[script.js](http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_ALPHA_ID + "/script.js)" )
+                .set( "url",
+                    "http://[::]:56567/artifacts/therealryan/bowlby/"
+                        + ArtifactRun.ARTIFACT_ALPHA_ID + "/" ) ) ),
         chain );
 
     Flow page = Creator.build( flow -> flow
@@ -169,13 +174,15 @@ public class LatestFromWorkflow extends EagerModel {
             .call( b -> b.to( Actors.BOWLBY )
                 .tags( Tags.add( "page" ) )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1776512962/page.html" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_ALPHA_ID
+                        + "/page.html" ) )
                 .response( ArtifactMessage.file(
                     Artifact.ALPHA, "page.html", "text/html" ) ) )
             .call( b -> b.to( Actors.BOWLBY )
                 .tags( Tags.add( "script" ) )
                 .request( HttpMessage.chromeRequest( "GET",
-                    "/artifacts/therealryan/bowlby/1776512962/script.js" ) )
+                    "/artifacts/therealryan/bowlby/" + ArtifactRun.ARTIFACT_ALPHA_ID
+                        + "/script.js" ) )
                 .response( ArtifactMessage.file(
                     Artifact.ALPHA, "script.js", "text/javascript" ) ) )
             .response( WebMessage.summarise()
@@ -186,7 +193,8 @@ public class LatestFromWorkflow extends EagerModel {
                     With javascript!""" )
                 .set( "title", "website" )
                 .set( "url", ""
-                    + "http://[::]:56567/artifacts/therealryan/bowlby/1776512962/page.html" ) ) ),
+                    + "http://[::]:56567/artifacts/therealryan/bowlby/"
+                    + ArtifactRun.ARTIFACT_ALPHA_ID + "/page.html" ) ) ),
         chain );
 
     members( flatten( get, submit, alpha, page ) );
