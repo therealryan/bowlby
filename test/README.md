@@ -52,10 +52,10 @@ BOWLBY_GH_AUTH_TOKEN=<api token value> mvn verify -pl test -am -Dit.test=ApiIT
 
 Exercises the github API in isolation, confirming that it responds as we expect it to.
 
-## `End2EndIT`
+## `EndToEndIT`
 
 ```
-BOWLBY_GH_AUTH_TOKEN=<api token value> mvn verify -pl test -am -Dit.test=End2EndIT
+BOWLBY_GH_AUTH_TOKEN=<api token value> mvn verify -pl test -am -Dit.test=EndToEndIT
 ```
 
 Stands up an instance of bowlby and exercises the complete system
