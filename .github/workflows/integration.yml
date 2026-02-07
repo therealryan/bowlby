@@ -1,9 +1,13 @@
-# Manually triggered, this workflow runs the integration tests that hit the github API endpoints
+# Runs the integration tests that hit the github API endpoints.
+# Can be manually provoked, but also runs on the 1st of every month
+# to cope with previous runs being pruned.
 
 name: integration testing
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+  schedule:
+      - cron: '0 8 * * *'
 
 jobs:
   build:

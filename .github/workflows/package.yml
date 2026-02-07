@@ -1,4 +1,6 @@
-# Manually triggered, this workflow compiles the application
+# Compiles the application.
+# Can be manually provoked, but also runs on the 1st of every month
+# to cope with previous runs being pruned.
 
 name: package
 
