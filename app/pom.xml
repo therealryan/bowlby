@@ -46,7 +46,7 @@
 
     <dependency>
       <!-- behaviour assertion -->
-      <groupId>${project.groupId}</groupId>
+      <groupId>${project.groupId}.test</groupId>
       <artifactId>assert</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

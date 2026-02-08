@@ -34,7 +34,7 @@ jobs:
         name: flow_execution_reports
         path: |
           app/target/mctf/latest
-          test/target/mctf/browser/latest
+          test/integration/target/mctf/browser/latest
 
     - name: Emit artifact links
       if: success() || failure()

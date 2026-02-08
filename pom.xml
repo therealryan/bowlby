@@ -18,8 +18,6 @@
 
   <modules>
     <module>app</module>
-    <module>assert</module>
-    <module>model</module>
     <module>test</module>
     <module>xml</module>
   </modules>

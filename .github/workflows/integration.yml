@@ -25,7 +25,7 @@ jobs:
     - name: Build with Maven
       env:
         BOWLBY_GH_AUTH_TOKEN: ${{ secrets.GH_API_AUTH_TOKEN }}
-      run: mvn -B verify --file pom.xml -pl test -am -Dmctf.report.dir=latest
+      run: mvn -B verify -pl test/integration -am -Dmctf.report.dir=latest
 
     - name: Save flow execution reports
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -34,8 +34,8 @@ jobs:
       with:
         name: flow_execution_reports
         path: |
-          test/target/mctf/e2e/latest
-          test/target/mctf/github/latest
+          test/integration/target/mctf/e2e/latest
+          test/integration/target/mctf/github/latest
 
     - name: Emit artifact links
       if: success() || failure()

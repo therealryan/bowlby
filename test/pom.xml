@@ -1,56 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>dev.flowty.bowlby</groupId>
     <artifactId>parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>test</artifactId>
-  <packaging>jar</packaging>
-  <description>integration testing</description>
 
-  <dependencies>
+  <groupId>dev.flowty.bowlby.test</groupId>
+  <artifactId>parent</artifactId>
+  <packaging>pom</packaging>
+  <description>Test module parent</description>
 
-    <dependency>
-      <!-- The system under test -->
-      <groupId>${project.groupId}</groupId>
-      <artifactId>app</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+  <modules>
+    <module>assert</module>
+    <module>model</module>
+    <module>integration</module>
+  </modules>
 
-    <dependency>
-      <!-- behaviour assertion -->
-      <groupId>${project.groupId}</groupId>
-      <artifactId>assert</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <!-- browser automation -->
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-java</artifactId>
-    </dependency>
-
-  </dependencies>
-  
   <build>
-    <plugins>
-      <plugin>
-        <!-- Runs our *IT tests during verify phase -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.4</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+
+          <groupId>net.revelc.code.formatter</groupId>
+          <artifactId>formatter-maven-plugin</artifactId>
+          <version>2.29.0</version>
+          <configuration>
+            <configFile>${project.basedir}/../../src/main/eclipse/format.xml</configFile>
+          </configuration>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
   </build>
 
 </project>
