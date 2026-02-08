@@ -10,7 +10,7 @@ import com.mastercard.test.flow.assrt.Reporting;
 import com.mastercard.test.flow.assrt.junit5.Flocessor;
 import com.mastercard.test.flow.msg.http.HttpReq;
 import dev.flowty.bowlby.model.BowlbySystem;
-import dev.flowty.bowlby.model.flow.ArtifactRun;
+import dev.flowty.bowlby.model.msg.PathVars;
 import dev.flowty.bowlby.test.HttpFlow;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,9 +37,10 @@ public class ApiIT {
 
   static {
     try {
-      TARGET = new URI("https://api.github.com");
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Bad github URI", e);
+      TARGET = new URI( "https://api.github.com" );
+    }
+    catch( URISyntaxException e ) {
+      throw new IllegalArgumentException( "Bad github URI", e );
     }
   }
 
@@ -50,38 +51,39 @@ public class ApiIT {
    */
   @TestFactory
   Stream<DynamicNode> tests() {
-    return new Flocessor("github", BowlbySystem.MODEL)
-        .system(State.FUL, GITHUB)
-        .masking(BORING, RNG)
-        .reporting(Reporting.ALWAYS, "github")
-        .behaviour(asrt -> {
+    return new Flocessor( "github", BowlbySystem.MODEL )
+        .system( State.FUL, GITHUB )
+        .masking( BORING, RNG )
+        .reporting( Reporting.ALWAYS, "github" )
+        .behaviour( asrt -> {
           HttpReq request = (HttpReq) asrt.expected().request().child();
 
           try {
             // inject latest run values
-            request.set(ArtifactRun.RUN_ID, latest.runId());
-            request.set(ArtifactRun.ALPHA_ID, latest.artifactAlphaId());
-            request.set(ArtifactRun.BETA_ID, latest.artifactBetaId());
+            request.set( PathVars.RUN_ID, latest.runId() );
+            request.set( PathVars.ALPHA_ID, latest.artifactAlphaId() );
+            request.set( PathVars.BETA_ID, latest.artifactBetaId() );
 
-            HttpRequest.Builder req = HttpFlow.builder(TARGET, request);
+            HttpRequest.Builder req = HttpFlow.builder( TARGET, request );
 
             // Take careful note of how we're populating the auth token at the last possible
             // moment, not passing the secret value outside of this class, not logging the
             // request, and not populating it into the flow data model
-            req.setHeader("authorization", "Bearer " + System.getenv("BOWLBY_GH_AUTH_TOKEN"));
+            req.setHeader( "authorization", "Bearer " + System.getenv( "BOWLBY_GH_AUTH_TOKEN" ) );
             // we're trying to minimise the possibility of it leaking to disk
 
             HttpResponse<String> response = HTTP.send(
                 req.build(),
-                BodyHandlers.ofString());
+                BodyHandlers.ofString() );
 
             asrt.actual()
-                .request(request.content())
-                .response(HttpFlow.assertable(response));
-          } catch (Exception e) {
-            fail(e);
+                .request( request.content() )
+                .response( HttpFlow.assertable( response ) );
           }
-        })
+          catch( Exception e ) {
+            fail( e );
+          }
+        } )
         .tests();
   }
 }

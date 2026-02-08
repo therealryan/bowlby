@@ -69,7 +69,8 @@ public class Entity {
    * @param name     The artifact name
    */
   public record NamedArtifact(Artifact artifact, String name) {
-    public static final Comparator<NamedArtifact> ORDER = Comparator.comparing(NamedArtifact::name)
-        .thenComparing(a -> a.artifact.id());
+    public static final Comparator<
+        NamedArtifact> ORDER = Comparator.comparing( NamedArtifact::name )
+            .thenComparing( a -> a.artifact.id() );
   }
 }

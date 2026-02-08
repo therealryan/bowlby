@@ -7,8 +7,16 @@ import static dev.flowty.bowlby.model.BowlbySystem.Actors.GITHUB;
 import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.BORING;
 import static dev.flowty.bowlby.model.BowlbySystem.Unpredictables.RNG;
 
+import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
+import com.mastercard.test.flow.assrt.Replay;
+import com.mastercard.test.flow.assrt.Reporting;
+import com.mastercard.test.flow.assrt.junit5.Flocessor;
+import com.mastercard.test.flow.msg.web.WebSequence;
+import dev.flowty.bowlby.app.Main;
+import dev.flowty.bowlby.app.cfg.Parameters;
+import dev.flowty.bowlby.model.BowlbySystem;
+import dev.flowty.bowlby.test.TestLog;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicNode;
@@ -17,17 +25,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-
-import com.mastercard.test.flow.assrt.AbstractFlocessor.State;
-import com.mastercard.test.flow.assrt.Replay;
-import com.mastercard.test.flow.assrt.Reporting;
-import com.mastercard.test.flow.assrt.junit5.Flocessor;
-import com.mastercard.test.flow.msg.web.WebSequence;
-
-import dev.flowty.bowlby.app.Main;
-import dev.flowty.bowlby.app.cfg.Parameters;
-import dev.flowty.bowlby.model.BowlbySystem;
-import dev.flowty.bowlby.test.TestLog;
 
 /**
  * Exercises the complete system, clicking at the browser and hitting github on
@@ -39,6 +36,7 @@ import dev.flowty.bowlby.test.TestLog;
 class EndToEndIT {
 
   private static Main app;
+  private static LatestArtifactsRun latest = new LatestArtifactsRun();
 
   /**
    * Starts the bowlby instance
@@ -65,6 +63,12 @@ class EndToEndIT {
           WebSequence request = (WebSequence) asrt.expected().request().child();
           if( request.get( "bowlby_url" ) != null ) {
             request.set( "bowlby_url", app.uri().toString() );
+          }
+          if( String.valueOf( request.get( "workflow_link" ) )
+              .matches( ".*/actions/runs/\\d+/artifacts/\\d+" ) ) {
+            request.set( "workflow_link", "https://github.com/therealryan/bowlby/actions"
+                + "/runs/" + latest.runId()
+                + "/artifacts/" + latest.artifactBetaId() );
           }
 
           WebDriver driver = driver();

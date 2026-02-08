@@ -50,7 +50,8 @@ public class WebMessage {
               .click();
         } )
         .masking( Unpredictables.RNG, m -> m
-            .replace( "bowlby_url", "_masked_" ) );
+            .replace( "bowlby_url", "_masked_" )
+            .replace( "workflow_link", "_masked_" ) );
   }
 
   /**

@@ -9,7 +9,8 @@ import dev.flowty.bowlby.app.github.GithubApiClient;
 import java.util.Set;
 
 /**
- * Hits github to find the run and artifact ID of the latest run of the artifacts.yml workflow.
+ * Hits github to find the run and artifact ID of the latest run of the
+ * artifacts.yml workflow.
  */
 public class LatestArtifactsRun {
 
@@ -21,26 +22,26 @@ public class LatestArtifactsRun {
 
     GithubApiClient github = new GithubApiClient(
         "https://api.github.com",
-        System.getenv("BOWLBY_GH_AUTH_TOKEN"));
+        System.getenv( "BOWLBY_GH_AUTH_TOKEN" ) );
 
-    Repository repo = new Repository("therealryan", "bowlby");
-    Workflow workflow = new Workflow(repo, "artifacts.yml");
-    Branch branch = new Branch(repo, "main");
-    Run latest = github.getLatestRun(workflow, branch);
-    Set<NamedArtifact> artifacts = github.getArtifacts(latest);
+    Repository repo = new Repository( "therealryan", "bowlby" );
+    Workflow workflow = new Workflow( repo, "artifacts.yml" );
+    Branch branch = new Branch( repo, "main" );
+    Run latest = github.getLatestRun( workflow, branch );
+    Set<NamedArtifact> artifacts = github.getArtifacts( latest );
 
-    runId = Long.parseLong(latest.id());
+    runId = Long.parseLong( latest.id() );
 
     artifactAlphaId = artifacts.stream()
-        .filter(a -> "artifact_alpha".equals(a.name()))
+        .filter( a -> "artifact_alpha".equals( a.name() ) )
         .findAny()
-        .map(a -> Long.parseLong(a.artifact().id()))
+        .map( a -> Long.parseLong( a.artifact().id() ) )
         .orElseThrow();
 
     artifactBetaId = artifacts.stream()
-        .filter(a -> "artifact_beta".equals(a.name()))
+        .filter( a -> "artifact_beta".equals( a.name() ) )
         .findAny()
-        .map(a -> Long.parseLong(a.artifact().id()))
+        .map( a -> Long.parseLong( a.artifact().id() ) )
         .orElseThrow();
   }
 
