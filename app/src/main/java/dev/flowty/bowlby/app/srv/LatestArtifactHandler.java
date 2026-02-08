@@ -139,7 +139,7 @@ class LatestArtifactHandler implements HttpHandler {
    * @param workflow The workflow
    * @return The latest set of artifacts from that workflow
    */
-  private LatestArtifact getLatest( Workflow workflow ) {
+  public LatestArtifact getLatest( Workflow workflow ) {
 
     // prune the cache
     Instant now = Instant.now();
