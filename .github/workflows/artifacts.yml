@@ -22,9 +22,9 @@ jobs:
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: artifact_alpha
-        path: 'model/src/main/resources/artifact_alpha'
+        path: 'test/model/src/main/resources/artifact_alpha'
     - name: Generate test artifact beta
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: artifact_beta
-        path: 'model/src/main/resources/artifact_beta'
+        path: 'test/model/src/main/resources/artifact_beta'
