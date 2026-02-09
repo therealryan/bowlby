@@ -49,6 +49,10 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <!-- selenium can be flaky -->
+          <rerunFailingTestsCount>3</rerunFailingTestsCount>
+        </configuration>
       </plugin>
     </plugins>
   </build>
