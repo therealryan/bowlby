@@ -24,7 +24,7 @@ flowchart LR
   artifacts
   end
 
-  subgraph End2EndIT
+  subgraph EndToEndIT
   browser
   bowlby
   github
