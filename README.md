@@ -8,7 +8,7 @@ Enter **bowlby**, an application that does the tedious downloading and unzipping
 
 We've got an instance running at https://bowlby.flowty.dev/self/ that allows access to the artifacts in this project.
 You can browse the latest test results at
- * [bowlby in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports)
+ * [bowlby in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/index.html)
  * [github in isolation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/integration.yml/flow_execution_reports/github/latest/index.html)
  * [integrated system](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/integration.yml/flow_execution_reports/e2e/latest/index.html)
 
