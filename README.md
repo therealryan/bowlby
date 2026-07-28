@@ -40,10 +40,10 @@ bolwby does not currently provide pre-built images. Pull requests are welcome to
 Point a browser at the instance (e.g.: if you're running it locally then `http://localhost:56567`) and the root page will show a form that accepts two types of links:
  * Links to specific artifacts, such as you see at the bottom of the summary page of a workflow run (e.g.: `https://github.com/therealryan/bowlby/actions/runs/10391396242/artifacts/1812359413`)
    Bowlby will redirect you to a view of the files in that particular artifact.
-   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aartifact)
+   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/index.html#?inc=chain%3Aartifact)
  * Links to workflows, such as you'd find on the "Actions" tab (e.g.: `https://github.com/therealryan/bowlby/actions/workflows/testing.yml`)
    Bowlby will redirect you to a page with stable links that display the files of the most recent artifacts of that workflow on the repo's default branch.
-   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/app/target/mctf/latest/index.html#?inc=chain%3Aworkflow)
+   [This set of flows illustrates that operation](https://bowlby.flowty.dev/self/latest/therealryan/bowlby/testing.yml/flow_execution_reports/index.html#?inc=chain%3Aworkflow)
 
 You can integrate your bowlby instance directly into your actions by:
  1. Giving your upload-artifact step an `id` ([for example](https://github.com/therealryan/bowlby/blob/main/.github/workflows/testing.yml#L30))
